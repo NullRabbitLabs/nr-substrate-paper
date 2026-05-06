@@ -1635,7 +1635,9 @@ baseline:
 | Solana-holdout, inclusive | 0.5000 | 0.7088 | **142%** |
 
 **Joint A by wide margin** (all four chain × slice cells
-clear the 95% retention threshold). V8 lifts the cross-chain
+well above the 80% Outcome A threshold; lab-only Sui-holdout
+1.91× the threshold, the closest cell Solana-holdout
+lab-only at 1.55×). V8 lifts the cross-chain
 accuracy floor on the Sui-holdout side from V7-narrow §SE3
 sub-chance (0.32–0.38) to clearly above-chance (0.61–0.67) by
 removing the `pcap.mean_packet_size` distribution-mismatch
@@ -1931,8 +1933,8 @@ Full reproducibility is committed at three levels:
 
 - **Format spec at `nr-bundle-spec` v0.1.0**
   ([github.com/NullRabbitLabs/nr-bundle-spec][nrbundle],
-  MIT-licensed, published 2026-05-06; D-012 publication
-  strategy). JSON Schema + pyarrow schemas + reference parsers
+  MIT-licensed; v0.1.0 tagged 2026-05-06; access state per
+  §3.4 framing note; D-012 publication strategy). JSON Schema + pyarrow schemas + reference parsers
   in Python and Rust + five reference example bundles.
   Cross-language guarantees pinned by tests: byte-equivalent
   wire enum strings, byte-equivalent `compute_genome_id`
@@ -2567,14 +2569,18 @@ if `resp.amp_ratio_max` continues to anti-transfer cross-
 chain on TLS-fronted captures, the chain-asymmetric mechanism
 finding generalises to the production-fidelity tier.
 
-## Table A.4 - cohen_d landscape evolution (V4 → V5 → V6 → V7-narrow)
+## Table A.4 - cohen_d landscape evolution (V4 → V5 → V6 → V7-narrow → Step-11 V1)
 
 Per-feature cohen_d (effect size) evolution across the
-manifest progression. Numbers cited from
-`STEP-8-AUDIT-FINDINGS-V2.md` §v4 / §v5 / §v6 / §v7-narrow
-audit-doc tables.
+manifest progression. The Step-11 V1 column reflects the
+CIPHER_AGNOSTIC_V1 8-feature subset derived after V7-narrow
+from RATE_INVARIANT_V2 by the body-parse-required exclusion
+principle (§7.1); CIPHER_AGNOSTIC_V1 is not V7-narrow's own
+manifest. Numbers cited from `STEP-8-AUDIT-FINDINGS-V2.md`
+§v4 / §v5 / §v6 / §v7-narrow audit-doc tables and
+`STEP-11-AUDIT-FINDINGS.md` for the Step-11 V1 column.
 
-| feature | V4 (Sui-fold-only, single-chain) | V5 (combined-corpus, RATE_INVARIANT_V1) | V6 (combined, RATE_INVARIANT_V2) | V7-narrow (CIPHER_AGNOSTIC_V1) |
+| feature | V4 (Sui-fold-only, single-chain) | V5 (combined-corpus, RATE_INVARIANT_V1) | V6 (combined, RATE_INVARIANT_V2) | Step-11 V1 (CIPHER_AGNOSTIC_V1) |
 |---|---:|---:|---:|---:|
 | `pcap.mean_packet_size` | 1.0 (lab-fidelity-bound; KDE-overlap ~0.05) | landed in V1 | landed in V2 | retained (Layer-2 prediction §7.2) |
 | `pcap.top_dst_port_fraction` | mid Sui-only | **1.000** (chain-deterministic; V5 Joint-C trigger) | dropped (V6 Section B revision) | excluded |
@@ -2609,7 +2615,7 @@ bug); report at the canonical issue tracker per
 `AUDITOR-PROTOCOL` cycle-close discipline.
 
 
-# Appendix B - Decisions log summary (D-001 → D-020)
+# Appendix B - Decisions log summary (D-001 → D-023)
 
 This appendix summarises this paper's load-bearing
 decisions in table form. Full content for each decision is
