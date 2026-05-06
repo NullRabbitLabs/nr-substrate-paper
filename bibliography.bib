@@ -1,0 +1,438 @@
+% bibliography.bib - substrate paper references
+%
+% Resolved at v1 final-draft-gate bibliometric pass
+% (2026-05-04). Each citation handle is referenced from
+% sections/02-related-work.md (and §1 for the
+% reproducibility lineage). CVE entries cite NVD URLs as
+% the canonical durable record.
+%
+% Citation discipline:
+%   - Academic prior art: full BibTeX with DOI
+%   - JA3 / JA4: @misc with GitHub repo URL (no
+%     peer-reviewed venue exists)
+%   - CVEs: @misc with NVD URL
+%   - Sister paper: @misc with Zenodo DOI
+
+% =====================================================================
+% Sister paper - architectural-layer companion
+% =====================================================================
+
+@misc{morley2026earnedautonomy,
+  author       = {Morley, Simon},
+  title        = {Earned Autonomy: an architectural framework for
+                  graduated trust in autonomous security systems},
+  year         = {2026},
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.18406828},
+  url          = {https://doi.org/10.5281/zenodo.18406828},
+  note         = {Architectural-layer companion to the substrate paper.}
+}
+
+% =====================================================================
+% ML reproducibility / pre-registration prior art (§2.5)
+% =====================================================================
+
+@article{ioannidis2005why,
+  author    = {Ioannidis, John P. A.},
+  title     = {Why Most Published Research Findings Are False},
+  journal   = {PLoS Medicine},
+  volume    = {2},
+  number    = {8},
+  pages     = {e124},
+  year      = {2005},
+  month     = aug,
+  doi       = {10.1371/journal.pmed.0020124},
+  url       = {https://doi.org/10.1371/journal.pmed.0020124}
+}
+
+@article{errington2021reproducibility,
+  author    = {Errington, Timothy M. and Mathur, Maya and
+               Soderberg, Courtney K. and Denis, Alexandria and
+               Perfito, Nicole and Iorns, Elizabeth and
+               Nosek, Brian A.},
+  title     = {Investigating the replicability of preclinical
+               cancer biology},
+  journal   = {eLife},
+  volume    = {10},
+  pages     = {e71601},
+  year      = {2021},
+  doi       = {10.7554/eLife.71601},
+  url       = {https://doi.org/10.7554/eLife.71601}
+}
+
+@article{munafo2017manifesto,
+  author    = {Munaf{\`o}, Marcus R. and Nosek, Brian A. and
+               Bishop, Dorothy V. M. and Button, Katherine S. and
+               Chambers, Christopher D. and
+               Percie du Sert, Nathalie and Simonsohn, Uri and
+               Wagenmakers, Eric-Jan and Ware, Jennifer J. and
+               Ioannidis, John P. A.},
+  title     = {A manifesto for reproducible science},
+  journal   = {Nature Human Behaviour},
+  volume    = {1},
+  number    = {1},
+  pages     = {0021},
+  year      = {2017},
+  doi       = {10.1038/s41562-016-0021},
+  url       = {https://doi.org/10.1038/s41562-016-0021}
+}
+
+@article{gebru2021datasheets,
+  author    = {Gebru, Timnit and Morgenstern, Jamie and
+               Vecchione, Briana and Vaughan, Jennifer Wortman and
+               Wallach, Hanna and Daum{\'e} III, Hal and
+               Crawford, Kate},
+  title     = {Datasheets for datasets},
+  journal   = {Communications of the ACM},
+  volume    = {64},
+  number    = {12},
+  pages     = {86--92},
+  year      = {2021},
+  month     = dec,
+  publisher = {Association for Computing Machinery},
+  doi       = {10.1145/3458723},
+  url       = {https://doi.org/10.1145/3458723}
+}
+
+% =====================================================================
+% LOPO + cross-validation methodology (§2.2)
+% =====================================================================
+
+@article{roberts2017crossvalidation,
+  author    = {Roberts, David R. and Bahn, Volker and Ciuti, Simone and
+               Boyce, Mark S. and Elith, Jane and
+               Guillera-Arroita, Gurutzeta and Hauenstein, Severin and
+               Lahoz-Monfort, Jos{\'e} J. and Schr{\"o}der, Boris and
+               Thuiller, Wilfried and Warton, David I. and
+               Wintle, Brendan A. and Hartig, Florian and
+               Dormann, Carsten F.},
+  title     = {Cross-validation strategies for data with temporal,
+               spatial, hierarchical, or phylogenetic structure},
+  journal   = {Ecography},
+  volume    = {40},
+  number    = {8},
+  pages     = {913--929},
+  year      = {2017},
+  doi       = {10.1111/ecog.02881},
+  url       = {https://doi.org/10.1111/ecog.02881}
+}
+
+% =====================================================================
+% Blockchain validator DoS / CVE prior art (§2.3)
+% =====================================================================
+%
+% Public CVE coverage of validator-DoS in 2024–2026 is uneven
+% across chains. Five HIGH-confidence CVEs catalogued below
+% (4 go-ethereum + 1 CometBFT). Sui, Solana, and Aptos have
+% no validator-DoS CVEs assigned in the period despite
+% disclosed vendor advisories (e.g., HackenProof Sui
+% CompiledModule OOM 2024; Anza/Agave ELF CALL_REG patch
+% 2024-08-08).
+
+@misc{cve-2024-32972,
+  title        = {{CVE-2024-32972}: {go-ethereum} {GetBlockHeadersRequest}
+                  count underflow enables byte amplification},
+  year         = {2024},
+  month        = may,
+  howpublished = {NVD / GitHub Security Advisory GHSA-4xc9-8hmq-j652},
+  url          = {https://nvd.nist.gov/vuln/detail/CVE-2024-32972},
+  note         = {go-ethereum byte-amplification family;
+                  disclosed 2024-05-06.}
+}
+
+@misc{cve-2025-24371,
+  title        = {{CVE-2025-24371}: {CometBFT} blocksync monotonic-height
+                  enforcement enables consensus-layer stalling},
+  year         = {2025},
+  month        = feb,
+  howpublished = {NVD / GitHub Security Advisory GHSA-22qq-3xwm-r5x4},
+  url          = {https://nvd.nist.gov/vuln/detail/CVE-2025-24371},
+  note         = {Cosmos-family (CometBFT) consensus-abuse family;
+                  disclosed 2025-02-03.}
+}
+
+@misc{cve-2025-24883,
+  title        = {{CVE-2025-24883}: {go-ethereum} {RLPx} EC public-key
+                  validation gap enables network-layer node crash},
+  year         = {2025},
+  month        = jan,
+  howpublished = {NVD / GitHub Security Advisory GHSA-q26p-9cq4-7fc2},
+  url          = {https://nvd.nist.gov/vuln/detail/CVE-2025-24883},
+  note         = {go-ethereum network-layer crash family;
+                  disclosed 2025-01-30.}
+}
+
+@misc{cve-2026-26313,
+  title        = {{CVE-2026-26313}: {go-ethereum} p2p message handling
+                  enables high memory consumption},
+  year         = {2026},
+  month        = feb,
+  howpublished = {NVD / GitHub Security Advisory GHSA-689v-6xwf-5jf3},
+  url          = {https://nvd.nist.gov/vuln/detail/CVE-2026-26313},
+  note         = {go-ethereum memory-abuse family;
+                  disclosed 2026-02-17.}
+}
+
+@misc{cve-2026-26314,
+  title        = {{CVE-2026-26314}: {go-ethereum} p2p message-handling
+                  input-validation gap enables process crash},
+  year         = {2026},
+  month        = feb,
+  howpublished = {NVD / GitHub Security Advisory GHSA-2gjw-fg97-vg3r},
+  url          = {https://nvd.nist.gov/vuln/detail/CVE-2026-26314},
+  note         = {go-ethereum compute-amplification family;
+                  disclosed 2026-02-19.}
+}
+
+% =====================================================================
+% Capture-format / dataset publication discipline (§2.4)
+% =====================================================================
+
+@inproceedings{sharafaldin2018cicids,
+  author    = {Sharafaldin, Iman and Lashkari, Arash Habibi and
+               Ghorbani, Ali A.},
+  title     = {Toward Generating a New Intrusion Detection Dataset and
+               Intrusion Traffic Characterization},
+  booktitle = {Proceedings of the 4th International Conference on
+               Information Systems Security and Privacy ({ICISSP})},
+  pages     = {108--116},
+  year      = {2018},
+  address   = {Funchal, Madeira, Portugal},
+  publisher = {SciTePress},
+  doi       = {10.5220/0006639801080116},
+  url       = {https://doi.org/10.5220/0006639801080116}
+}
+
+@inproceedings{sharafaldin2019ddos,
+  author    = {Sharafaldin, Iman and Lashkari, Arash Habibi and
+               Hakak, Saqib and Ghorbani, Ali A.},
+  title     = {Developing Realistic Distributed Denial of Service
+               ({DDoS}) Attack Dataset and Taxonomy},
+  booktitle = {2019 International Carnahan Conference on Security
+               Technology ({ICCST})},
+  pages     = {1--8},
+  year      = {2019},
+  publisher = {IEEE},
+  doi       = {10.1109/CCST.2019.8888419},
+  url       = {https://doi.org/10.1109/CCST.2019.8888419}
+}
+
+@inproceedings{cho2000mawi,
+  author    = {Cho, Kenjiro and Mitsuya, Koushirou and Kato, Akira},
+  title     = {Traffic Data Repository at the {WIDE} Project},
+  booktitle = {Proceedings of the {USENIX} Annual Technical Conference,
+               {FREENIX} Track},
+  pages     = {263--270},
+  year      = {2000},
+  month     = jun,
+  address   = {San Diego, CA, USA},
+  publisher = {USENIX Association},
+  url       = {https://www.usenix.org/conference/2000-usenix-annual-technical-conference/traffic-data-repository-wide-project}
+}
+
+@inproceedings{engelen2021troubleshooting,
+  author    = {Engelen, Gints and Rimmer, Vera and Joosen, Wouter},
+  title     = {Troubleshooting an Intrusion Detection Dataset:
+               the {CICIDS2017} Case Study},
+  booktitle = {2021 IEEE Security and Privacy Workshops ({SPW})},
+  pages     = {7--12},
+  year      = {2021},
+  publisher = {IEEE},
+  doi       = {10.1109/SPW53761.2021.00009},
+  url       = {https://doi.org/10.1109/SPW53761.2021.00009}
+}
+
+@inproceedings{lanvin2023errors,
+  author    = {Lanvin, Maxime and Gimenez, Pierre-Fran{\c{c}}ois and
+               Han, Yufei and Majorczyk, Fr{\'e}d{\'e}ric and
+               M{\'e}, Ludovic and Totel, Eric},
+  title     = {Errors in the {CICIDS2017} Dataset and the Significant
+               Differences in Detection Performances It Makes},
+  booktitle = {Risks and Security of Internet and Systems: 17th
+               International Conference, {CRiSIS} 2022},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {13857},
+  pages     = {18--33},
+  year      = {2023},
+  publisher = {Springer},
+  doi       = {10.1007/978-3-031-31108-6\_2},
+  url       = {https://doi.org/10.1007/978-3-031-31108-6_2}
+}
+
+% =====================================================================
+% ML for network security detection (§2.1)
+% =====================================================================
+
+@inproceedings{sommer2010outside,
+  author    = {Sommer, Robin and Paxson, Vern},
+  title     = {Outside the Closed World: On Using Machine Learning for
+               Network Intrusion Detection},
+  booktitle = {2010 IEEE Symposium on Security and Privacy},
+  pages     = {305--316},
+  year      = {2010},
+  publisher = {IEEE},
+  doi       = {10.1109/SP.2010.25},
+  url       = {https://doi.org/10.1109/SP.2010.25}
+}
+
+@inproceedings{arp2022dosdonts,
+  author    = {Arp, Daniel and Quiring, Erwin and Pendlebury, Feargus and
+               Warnecke, Alexander and Pierazzi, Fabio and
+               Wressnegger, Christian and Cavallaro, Lorenzo and
+               Rieck, Konrad},
+  title     = {Dos and Don'ts of Machine Learning in Computer Security},
+  booktitle = {31st USENIX Security Symposium (USENIX Security 22)},
+  pages     = {3971--3988},
+  year      = {2022},
+  month     = aug,
+  publisher = {USENIX Association},
+  address   = {Boston, MA},
+  isbn      = {978-1-939133-31-1},
+  url       = {https://www.usenix.org/conference/usenixsecurity22/presentation/arp}
+}
+
+@article{buczak2016survey,
+  author    = {Buczak, Anna L. and Guven, Erhan},
+  title     = {A Survey of Data Mining and Machine Learning Methods for
+               Cyber Security Intrusion Detection},
+  journal   = {IEEE Communications Surveys \& Tutorials},
+  volume    = {18},
+  number    = {2},
+  pages     = {1153--1176},
+  year      = {2016},
+  doi       = {10.1109/COMST.2015.2494502},
+  url       = {https://doi.org/10.1109/COMST.2015.2494502}
+}
+
+@article{mirkovic2004taxonomy,
+  author    = {Mirkovic, Jelena and Reiher, Peter},
+  title     = {A Taxonomy of {DDoS} Attack and {DDoS} Defense Mechanisms},
+  journal   = {ACM SIGCOMM Computer Communication Review},
+  volume    = {34},
+  number    = {2},
+  pages     = {39--53},
+  year      = {2004},
+  month     = apr,
+  publisher = {Association for Computing Machinery},
+  doi       = {10.1145/997150.997156},
+  url       = {https://doi.org/10.1145/997150.997156}
+}
+
+% =====================================================================
+% TLS / encrypted-traffic feature extraction (§2.1)
+% =====================================================================
+
+@misc{althouse2017ja3,
+  author       = {Althouse, John and Atkinson, Jeff and Atkins, Josh},
+  title        = {{JA3}: A method for profiling {SSL/TLS} clients},
+  year         = {2017},
+  publisher    = {Salesforce Engineering / GitHub},
+  howpublished = {\url{https://github.com/salesforce/ja3}},
+  note         = {Original blog post:
+                  https://engineering.salesforce.com/tls-fingerprinting-with-ja3-and-ja3s-247362855967/}
+}
+
+@misc{althouse2023ja4,
+  author       = {Althouse, John},
+  title        = {{JA4+} Network Fingerprinting},
+  year         = {2023},
+  publisher    = {FoxIO LLC / GitHub},
+  howpublished = {\url{https://github.com/FoxIO-LLC/ja4}},
+  note         = {Original announcement:
+                  https://blog.foxio.io/ja4+-network-fingerprinting}
+}
+
+@inproceedings{anderson2017machine,
+  author    = {Anderson, Blake and McGrew, David},
+  title     = {Machine Learning for Encrypted Malware Traffic
+               Classification: Accounting for Noisy Labels and
+               Non-Stationarity},
+  booktitle = {Proceedings of the 23rd ACM SIGKDD International
+               Conference on Knowledge Discovery and Data Mining
+               ({KDD})},
+  pages     = {1723--1732},
+  year      = {2017},
+  publisher = {ACM},
+  doi       = {10.1145/3097983.3098163},
+  url       = {https://doi.org/10.1145/3097983.3098163}
+}
+
+@inproceedings{wang2017endtoend,
+  author    = {Wang, Wei and Zhu, Ming and Wang, Jinlin and
+               Zeng, Xuewen and Yang, Zhongzhen},
+  title     = {End-to-End Encrypted Traffic Classification with
+               One-Dimensional Convolution Neural Networks},
+  booktitle = {2017 IEEE International Conference on Intelligence and
+               Security Informatics ({ISI})},
+  pages     = {43--48},
+  year      = {2017},
+  publisher = {IEEE},
+  doi       = {10.1109/ISI.2017.8004872},
+  url       = {https://doi.org/10.1109/ISI.2017.8004872}
+}
+
+% =====================================================================
+% Closest prior art (§2.7)
+% =====================================================================
+%
+% Two of the four §2.7 differentiation axes have close prior
+% art (pre-registered ML; cross-dataset evaluation in NIDS).
+% The other two (cipher-agnostic feature-subset boundary
+% derivation; falsifiability-layers framework operationalised
+% for security-ML) have no close prior art at v1 final-draft
+% gate; §2.7 acknowledges this explicitly per principle 2
+% (honest framing).
+
+@misc{hofman2023preregistration,
+  author       = {Hofman, Jake M. and Chatzimparmpas, Angelos and
+                  Sharma, Amit and Watts, Duncan J. and
+                  Hullman, Jessica},
+  title        = {Pre-registration for Predictive Modeling},
+  year         = {2023},
+  eprint       = {2311.18807},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2311.18807},
+  url          = {https://arxiv.org/abs/2311.18807}
+}
+
+@article{cantone2024crossdataset,
+  author    = {Cantone, Marco and Marrocco, Claudio and
+               Bria, Alessandro},
+  title     = {Machine Learning in Network Intrusion Detection:
+               A Cross-Dataset Generalization Study},
+  journal   = {IEEE Access},
+  volume    = {12},
+  pages     = {144489--144508},
+  year      = {2024},
+  doi       = {10.1109/ACCESS.2024.3472907},
+  url       = {https://doi.org/10.1109/ACCESS.2024.3472907}
+}
+
+@article{dhooge2020interdataset,
+  author    = {D'hooge, Laurens and Wauters, Tim and Volckaert, Bruno and
+               De Turck, Filip},
+  title     = {Inter-dataset generalization strength of supervised
+               machine learning methods for intrusion detection},
+  journal   = {Journal of Information Security and Applications},
+  volume    = {54},
+  pages     = {102564},
+  year      = {2020},
+  doi       = {10.1016/j.jisa.2020.102564},
+  url       = {https://doi.org/10.1016/j.jisa.2020.102564}
+}
+
+@software{bundle_spec_v0_1_0,
+  author    = {{NullRabbit}},
+  title     = {{Bundle v1: A Multi-Modal Capture Format for
+               Adversarial Research on Blockchain Validator
+               Infrastructure}},
+  year      = {2026},
+  month     = {5},
+  url       = {https://github.com/NullRabbitLabs/nr-bundle-spec},
+  version   = {0.1.0},
+  license   = {MIT},
+  note      = {Reference parsers in Python and Rust; JSON Schema
+               artefacts; five reference example bundles. Cross-
+               language guarantees pinned by tests.}
+}

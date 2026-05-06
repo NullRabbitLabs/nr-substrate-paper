@@ -1,0 +1,31 @@
+# Build outputs
+*.pdf
+*.aux
+*.log
+*.out
+*.bbl
+*.blg
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# Editor / OS detritus
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Python (for any future build tooling)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local working notes (do not ship)
+NOTES.md
+TODO.md
+DRAFT*.md
