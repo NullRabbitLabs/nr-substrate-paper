@@ -1635,9 +1635,9 @@ baseline:
 | Solana-holdout, inclusive | 0.5000 | 0.7088 | **142%** |
 
 **Joint A by wide margin** (all four chain × slice cells
-well above the 80% Outcome A threshold; lab-only Sui-holdout
-1.91× the threshold, the closest cell Solana-holdout
-lab-only at 1.55×). V8 lifts the cross-chain
+well above the 80% Outcome A threshold; the four cells span
+124-191% retention, with the closest cell at 1.55× the
+threshold and the strongest at 2.39×). V8 lifts the cross-chain
 accuracy floor on the Sui-holdout side from V7-narrow §SE3
 sub-chance (0.32–0.38) to clearly above-chance (0.61–0.67) by
 removing the `pcap.mean_packet_size` distribution-mismatch
@@ -2402,8 +2402,8 @@ conditions, not against asserted properties.
 
 Open call: adopt `nr-bundle-spec` v0.1.0
 ([github.com/NullRabbitLabs/nr-bundle-spec][nrbundle],
-MIT-licensed) on your own data; report when leak-surface
-peeling surfaces something new. The methodology-as-finding
+MIT-licensed; access state per §3.4) on your own data;
+report when leak-surface peeling surfaces something new. The methodology-as-finding
 framing means a field-tested instance - the discipline
 working on a different chain's validator infrastructure,
 surfacing its own failure modes, producing methodology
