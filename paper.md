@@ -1966,6 +1966,43 @@ The reproducibility commitment is operationalised: a reader
 can re-fetch the corpus version, re-run the trainer with the
 pinned run-tag, and obtain numerically-equivalent ROC tables.
 
+Phase-1 production-extractor close-gate pinning (per §8.3 +
+§8.7 MC-6/MC-7):
+
+- Union artefact (CLEARED) at `nr-substrate` commit
+  `8df67f6`; third-round audit-verdict capture at `5014a23`.
+- Same-run paired-bundle equivalence:
+  `docs/PHASE-1-CLOSE-GATE-PAIRED-2026-05-06.{md,json}`,
+  bundle `crp_79e6259fc635490a`.
+- Held-out cross-run equivalence (Option D two-run independent
+  capture; held-out bundle never observed by the production
+  extractor):
+  `docs/PHASE-1-CLOSE-GATE-HELDOUT-2026-05-06.{md,json}`,
+  bundle `crp_ec87cdafda67412b`.
+- Multi-window aggregation paths exercised:
+  `docs/PHASE-1-CLOSE-GATE-MULTIWINDOW-2026-05-06.{md,json}`,
+  bundle `crp_f6aa0452d2334c83`.
+- Sub-cap cardinality regime (the cardinality-envelope
+  surfacing artefact):
+  `docs/PHASE-1-CLOSE-GATE-LOWCARD-2026-05-06.{md,json}`,
+  bundle `crp_e0ae20e56add4be5`.
+- Production-extractor enabling commit (port-cardinality
+  closure): `nr-ibsr` commit `83878e7`.
+- Reproduction harnesses: `scripts/ibsr_aggregate_features.py`
+  (snapshot → 7-feature dict, multi-window weighted
+  aggregations documented at lines 24-30, 94-111) +
+  `scripts/phase1_cross_validate.py` (offline-vs-production
+  per-feature comparison against `PHASE_1_TOLERANCE`).
+
+A reader with the IBSR debug binary (`/data/cargo/target/debug/ibsr`
+at the pinned commit), a Sui localnet, and the F10 reproducer
+(`chains/sui/findings/F10/reproducer.py`) can replay each of
+the four sub-experiments and obtain numerically-identical
+feature dicts within `PHASE_1_TOLERANCE` (cardinality + max-
+byte exact, amp-ratio ±1e-4 absolute) - the same
+reproducibility discipline applied to the training-side
+run-tags above.
+
 ## §8.5 Prior-cycle leak-surface closures
 
 Methodology-as-evidence: each prior cycle closed a documented
