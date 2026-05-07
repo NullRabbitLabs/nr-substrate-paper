@@ -1566,6 +1566,16 @@ V7-narrow §SE3 evidence; the narrower interpretation
 (removing only status_*_frac → 10 features) is rejected as
 methodologically incoherent.
 
+The cipher-agnostic boundary's cardinality features
+(`pcap.unique_dst_ports`, `pcap.unique_src_ports`) interact
+with reproducer-pipeline connection-pooling semantics in
+ways that downstream feature analysis must account for:
+HTTP/1.1 keep-alive collapses per-worker requests onto a
+single client-side socket, so naive ports-per-direction
+counting can be fooled by reproducer-side connection
+pooling. §8.7 MC-7 + MC-10 document the L7 interaction
+surfaced at the Phase-1 close-gate.
+
 ## §7.2 Step-11 empirical retention measurement (V1 + V8)
 
 Step-11 Component 1 ran the empirical measurement of the
@@ -1913,19 +1923,29 @@ implementation computing the 8 `CIPHER_AGNOSTIC_V1` features
 on live packets at line rate) has cleared its Phase-1
 close-gate (numerical-equivalence verified against the
 offline reference extractor on the union of paired-bundle,
-held-out, and multi-window evidence; 2026-05-06). The
+held-out, and multi-window evidence; 2026-05-06; augmented
+2026-05-07 per D-025 with model-side prediction-class
+equivalence - `PHASE_1_SCORE_CLASS_MATCH` - under the third
+regime-scope condition, training-distribution-coverage). The
 production-extractor empirical-fidelity envelope is
-characterised at §8.7 MC-6 (saturation upper bound) + MC-7
-(cardinality lower bound). The IBSR shadow-mode architecture
-(deployment against own validator infrastructure first; not
-customer infrastructure yet) and the online inference
-latency budget remain queued as production-architecture
-scoping work (engineering plan document, not deployment
-work). Production engineering execution beyond the
-extractor begins post-paper-preprint; the scoping document
-drafts after the v1 outline lands and uses the
-cipher-agnostic feature surface as the production-required
-feature set per this paper's claims.
+characterised at §8.7 MC-6 (saturation upper bound), MC-7
+(cardinality lower bound), and MC-8 (training-distribution-
+coverage). Production deployment is unblocked when (a) an
+in-the-wild paired capture demonstrates the gate's intended
+PASS path on real-extractor in-distribution attack-signature
+traffic, and (b) the joint-conditions verification
+(cardinality + saturation + training-distribution-coverage
+composed) is extended into the harness or explicitly
+performed out-of-band as part of the deployment runbook. The
+IBSR shadow-mode architecture (deployment against own
+validator infrastructure first; not customer infrastructure
+yet) and the online inference latency budget remain queued
+as production-architecture scoping work (engineering plan
+document, not deployment work). Production engineering
+execution beyond the extractor begins post-paper-preprint;
+the scoping document drafts after the v1 outline lands and
+uses the cipher-agnostic feature surface as the production-
+required feature set per this paper's claims.
 
 ## §8.4 Reproducibility
 
@@ -2169,12 +2189,18 @@ claim (§7.2). The Phase-1 production-extractor close-gate
 (cleared 2026-05-06) verified the IBSR ShadowPayload mode's
 numerical-equivalence criterion against the offline reference
 extractor on the union of paired-bundle, held-out, and
-multi-window evidence. Together the two cycles surfaced seven
-substrate-paper-grade methodology contributions per principle 4.
-The contributions are cycle-specific learnings about
+multi-window evidence; the gate was augmented 2026-05-07
+per D-025 (close-gate semantic-coverage rule) with a
+higher-level prediction-class equivalence criterion
+(`PHASE_1_SCORE_CLASS_MATCH`) layered on `PHASE_1_TOLERANCE`.
+Together the cycles surfaced nine substrate-paper-grade
+methodology contributions per principle 4 (plus a
+footnote-grade companion observation paired with MC-7). The
+contributions are cycle-specific learnings about
 pre-registration discipline, manifest-family structure,
-cross-chain feature-quality criteria, and production-extractor
-fidelity-envelope bounds; each generalises beyond this project.
+cross-chain feature-quality criteria, production-extractor
+fidelity-envelope bounds, and close-gate compositional
+coverage; each generalises beyond this project.
 
 **MC-1: Reading-1 misspecification (V1 close).**
 Step-11 V1 design's §C.2 outcome-band rationale was anchored
@@ -2311,7 +2337,101 @@ empirical claim from below, and identifies operating-point
 anchoring on attack-regime distributions (rather than
 benign-idle distributions) as the principle-2-honest framing.
 
-**Transferability**: the seven contributions generalise
+**MC-8: Close-gate semantic-coverage rule (D-025, Phase-1,
+2026-05-07).** Pairs with and supersedes-of-scope MC-6 +
+MC-7: MC-8 adds a third regime-scope condition to the
+criterion-applicable regime band, training-distribution-
+coverage. The pattern: a close-gate that verifies a
+low-level property (production-extractor numerical
+equivalence to offline reference, within `PHASE_1_TOLERANCE`)
+on a held-out bundle is necessary but not sufficient for the
+deployment claim's higher-level property (prediction-class
+equivalence) when the verification configuration produces
+traffic outside the model's training distribution. The
+2026-05-06 Phase-1 close-gate cleared 7/7 numerical
+equivalence on `--ids-per-request 1 --workers 1
+--delay-ms 500` F10 traffic, but those bundles' offline-
+extracted features sit 1000-10000× outside V8's sui_F10
+training-distribution ranges; V8 scores both extractors'
+features as BENIGN (class 0) on the cleared bundles -
+honest OOD model uncertainty, not a regression - even though
+both extractors agree numerically. The discipline:
+production-extractor close-gates that verify a low-level
+property must pre-register the deployment-claim-load-bearing
+higher-level property when the two diverge. The Phase-1
+close-gate is the worked-example anti-pattern; D-025 lands
+the rule. The augmented harness (`PHASE_1_TOLERANCE` ⊕
+`PHASE_1_SCORE_CLASS_MATCH`) lands the implementation, with
+explicit OOD scope-condition handling (out-of-distribution
+→ advisory, not gating; in-distribution + classes-equal →
+gating). Three regime-scope conditions become mandatory
+pre-registration items rather than implicit assumptions:
+cardinality envelope (MC-7), saturation envelope (MC-6),
+training-distribution-coverage (this MC). Substrate-paper
+material under principle 4: pairs with MC-1 (Reading-1
+misspecification) and MC-5 (pre-registration-threshold-
+anchoring) as a third "pre-registration is harder than it
+looks" worked example, at compositional granularity rather
+than threshold-anchoring granularity.
+
+**MC-9: Three-check disambiguation pattern (Phase-1,
+2026-05-07).** When a downstream observation contradicts an
+upstream verification ("close-gate cleared but model says
+BENIGN on what looks like attack traffic"), the natural
+diagnostic question is: is this a model defect, an extractor
+defect, or honest OOD uncertainty? The three-check
+disambiguation answers cleanly: (1) does the model fire on
+its training distribution? - for Phase-1, V8 mean score
+0.9994 across the four sui_F10 lab-tls-fronted training
+bundles, all > 0.80; (2) does the verification configuration
+produce in-distribution features? - for Phase-1, 5/7
+features 1000-10000× outside training-distribution F10
+ranges; (3) is the divergence honest OOD uncertainty? -
+combining (1)+(2): the model is correct on its training
+distribution and the input is far outside that distribution;
+BENIGN is the honest model output, not a defect. The default
+"if low-level passed the high-level should too" reasoning
+conflates verification of pipeline equivalence with
+verification of deployment-claim properties. The three-check
+disambiguation makes the conflation visible by interrogating
+each layer separately. The right corrective action (compose
+a new gate / pre-register a new condition) becomes obvious;
+the wrong corrective actions (retrain the model / re-engineer
+the extractor) are ruled out. Domain-independent: replace
+"V8" with any model and "sui_F10" with any
+training-distribution scope to apply. Substrate-paper
+material under principle 4: methodology contribution at
+diagnostic-pattern granularity; the worked-example provenance
+is committed at
+`nr-substrate/docs/PHASE-1-CLOSE-GATE-DISAMBIGUATION-2026-05-07.md`.
+
+**MC-10 (footnote-grade): Cardinality posture under HTTP/1.1
+keep-alive (Phase-1, 2026-05-07).** Companion observation to
+MC-7. Reproducer-pipeline configurations interact with
+HTTP/1.1 connection pooling in ways that defeat naive
+cardinality envelopes. The demo F10 bundle
+(`crp_aa695427249e42ec`, `--workers 2 --ids-per-request 10
+--delay-ms 50 --duration 30`) produced offline
+`pcap.unique_dst_ports = pcap.unique_src_ports = 2`, well
+below MC-7's cardinality-envelope lower bound of 5. Cause:
+aiohttp's HTTP/1.1 keep-alive collapses each worker's
+requests onto a single client-side socket; 2 workers × 1
+keep-alive socket each = 2 distinct client TCP source ports
+across the capture window. Methodological consequence: a
+close-gate using the cardinality envelope as a regime-
+applicability condition must pre-register the reproducer's
+connection-pooling configuration explicitly. Either (a)
+require `--no-keepalive` (or equivalent) when cardinality
+is gating, or (b) document keep-alive collapse as expected
+behaviour and adjust the lower-bound rationale to "≥ N
+distinct keep-alive sockets, equating to N distinct client
+TCP source ports under default-keepalive HTTP/1.1."
+Substrate-paper material at footnote granularity under
+principle 4: corpus-design decisions about reproducer
+pipelines have downstream consequences for which features
+discriminate at the wire (§7.1 cross-refs).
+
+**Transferability**: the nine contributions generalise
 beyond this project's cipher-agnostic-manifest evaluation.
 MC-1 and MC-5 apply to any pre-registration that anchors
 thresholds on baseline-behaviour assumptions or prior-cycle
@@ -2325,10 +2445,24 @@ per-primitive effect size alone. MC-6 and MC-7 apply to any
 production-extractor empirical-fidelity claim where lossy
 event channels and observation-window-coverage asymmetries
 bound the criterion-applicable range as a band rather than a
-point. We document each contribution as cycle-specific
-evidence; reviewers may find the incident-driven contribution
-pattern useful as documented case studies parallel to §8.6's
-agent-discipline contributions.
+point. MC-8 applies to any composition of low-level
+verifier (extractor / preprocessor / pipeline stage) +
+downstream high-level deployment claim (model verdict /
+decision) where the two diverge under verification
+configurations that miss the model's training distribution.
+MC-9 applies to any model + pipeline compose where
+downstream verdict contradicts upstream verification - the
+three checks are domain-independent. MC-10 (footnote-grade)
+applies to any cardinality-feature gate that interacts with
+L7 connection-pooling semantics. We document each
+contribution as cycle-specific evidence; reviewers may find
+the incident-driven contribution pattern useful as
+documented case studies parallel to §8.6's agent-discipline
+contributions. The MC-10 "footnote-grade" designation
+indicates a corpus-design observation worth preserving but
+not load-bearing for any current substrate-paper claim;
+unlike MC-1 through MC-9, it does not generate a
+pre-registration discipline of its own.
 
 
 # §9 Conclusion
@@ -2376,8 +2510,9 @@ methodology-as-finding thesis canonically - the empirical
 substantiation runs across the V1 → V7-narrow Step-8
 leak-surface arc plus the Step-11 V1+V8 cipher-agnostic
 retrain cycle, with eight closed leak surfaces (§8.5) plus
-seven Step-11 + Phase-1 cycle methodology contributions
-(§8.7).
+nine Step-11 + Phase-1 cycle methodology contributions
+(§8.7), plus a footnote-grade companion observation paired
+with MC-7.
 
 The cipher-agnostic feature subset framework (§7.1) and the
 Step-11 V1+V8 empirical Joint A (§7.2) ship in v1. v2 trigger
@@ -2615,7 +2750,7 @@ bug); report at the canonical issue tracker per
 `AUDITOR-PROTOCOL` cycle-close discipline.
 
 
-# Appendix B - Decisions log summary (D-001 → D-023)
+# Appendix B - Decisions log summary (D-001 → D-025)
 
 This appendix summarises this paper's load-bearing
 decisions in table form. Full content for each decision is
@@ -2649,6 +2784,8 @@ provenance.
 | D-021 | Corpus-design wiring-gap rule (principle 5) - pre-registered primitives that fail to capture due to capture-pipeline wiring (not the underlying mechanism) are corpus-design failures and must be closed at corpus level before the cycle proceeds | 2026-05-03 | Active | §5.1.1 (principle 5), §8.7 (composes with V8 cycle's MC inventory) |
 | D-022 | Step-11 V8 manifest trim pre-registration (CIPHER_AGNOSTIC_V2 = CIPHER_AGNOSTIC_V1 minus `pcap.mean_packet_size`; sanity-floor extension for `resp.amp_ratio_max` per-fold decomposition) | 2026-05-04 | Active (Step-11 V8 retrain closed; Joint A by wide margin; V9 does NOT fire) | §7.2, §8.7 |
 | D-023 | Step-11 V8 close + cipher-agnostic Joint A (V7-narrow §SE3 reframe scoped; cipher-agnostic-manifest single-feature-dominance brittleness as substrate-paper material per principle 4; Layer-2 §C.3-bis pre-registration miscalibration contribution) | 2026-05-04 | Closed (Step-11 V8 closes; substrate-paper drafting unblocked) | §6.4, §7.2, §8.7 |
+| D-024 | Production-architecture vantage rescope: post-TLS-termination loopback (principle-1 misspecification correction; pre-engineering-posture criterion reformulation distinguished from D-021 post-engineering threshold-relaxation prohibition) | 2026-05-05 | Active (auditor verdict 2026-05-05 APPROVED WITH REFINEMENTS) | §8.3 (production deployment) |
+| D-025 | Close-gate semantic-coverage rule: production-extractor close-gates verifying a low-level property (extractor numerical equivalence) must pre-register the deployment-claim-load-bearing higher-level property (model prediction-class equivalence) when the two diverge; three regime-scope conditions become mandatory pre-registration items (cardinality envelope + saturation envelope + training-distribution-coverage) | 2026-05-07 | Adopted (Phase-1 close-gate augmented; MC-8 + MC-9 + MC-10 banked) | §8.3, §8.7 (MC-8, MC-9, MC-10) |
 
 **Decision IDs never re-number.** Superseded decisions stay
 in the log with a `Status: Superseded by D-NNN` line; the
@@ -2660,15 +2797,18 @@ the Phase-6a confabulation incident; §8.6).
 
 The three-pillar contribution maps onto specific decisions:
 
-- **Methodology pillar** (§5, §6, §7, §8.7) load-bearing
-  decisions: D-002 (chain-agnostic family_id), D-016
-  (cross-chain validation deferred to Step 10), D-017 (V5
-  design pre-registration), D-018 (V6 manifest revision +
-  per-chain holdout direction), D-019 (V7-narrow
+- **Methodology pillar** (§5, §6, §7, §8.3, §8.7)
+  load-bearing decisions: D-002 (chain-agnostic family_id),
+  D-016 (cross-chain validation deferred to Step 10), D-017
+  (V5 design pre-registration), D-018 (V6 manifest revision
+  + per-chain holdout direction), D-019 (V7-narrow
   disambiguation), D-021 (corpus-design wiring-gap rule;
   principle 5), D-022 (Step-11 V8 manifest trim
   pre-registration), D-023 (Step-11 V8 close +
-  cipher-agnostic Joint A empirically validated).
+  cipher-agnostic Joint A empirically validated), D-024
+  (production-architecture vantage rescope: post-TLS-
+  termination loopback), D-025 (close-gate semantic-coverage
+  rule).
 - **Format pillar** (§3) load-bearing decisions: D-003
   (CaptureSession API contract), D-007 (FidelityClass enum),
   D-008 (TargetAuthorisation), D-009 (vectors.parquet sixth
