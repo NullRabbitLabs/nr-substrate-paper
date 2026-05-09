@@ -1921,31 +1921,41 @@ taxonomy, methodology, V7-narrow technical centerpiece.
 The streaming-feature-extraction workstream (XDP / eBPF
 implementation computing the 8 `CIPHER_AGNOSTIC_V1` features
 on live packets at line rate) has cleared its Phase-1
-close-gate (numerical-equivalence verified against the
-offline reference extractor on the union of paired-bundle,
-held-out, and multi-window evidence; 2026-05-06; augmented
-2026-05-07 per D-025 with model-side prediction-class
-equivalence - `PHASE_1_SCORE_CLASS_MATCH` - under the third
-regime-scope condition, training-distribution-coverage). The
-production-extractor empirical-fidelity envelope is
-characterised at §8.7 MC-6 (saturation upper bound), MC-7
-(cardinality lower bound), and MC-8 (training-distribution-
-coverage). Production deployment is unblocked when (a) an
-in-the-wild paired capture demonstrates the gate's intended
-PASS path on real-extractor in-distribution attack-signature
-traffic, and (b) the joint-conditions verification
-(cardinality + saturation + training-distribution-coverage
-composed) is extended into the harness or explicitly
-performed out-of-band as part of the deployment runbook. The
-IBSR shadow-mode architecture (deployment against own
-validator infrastructure first; not customer infrastructure
-yet) and the online inference latency budget remain queued
-as production-architecture scoping work (engineering plan
-document, not deployment work). Production engineering
-execution beyond the extractor begins post-paper-preprint;
-the scoping document drafts after the v1 outline lands and
-uses the cipher-agnostic feature surface as the production-
-required feature set per this paper's claims.
+close-gate (2026-05-06; augmented 2026-05-07 per D-025;
+joint-conditions verification 2026-05-08). The gate
+verifies extractor numerical equivalence to the offline
+reference (`PHASE_1_TOLERANCE`) AND model-side
+prediction-class equivalence (`PHASE_1_SCORE_CLASS_MATCH`)
+AND joint in-criterion-applicable-regime status (cardinality
+envelope + saturation envelope + training-distribution-
+coverage), with saturation-envelope verification delegated
+to the operator's runtime monitoring runbook. Verified
+empirically 2026-05-08 on paired live capture (offline
+bundle + IBSR `collect-payload` snapshot) of an
+attack-signature F10 window: 5/7 features exact-equivalent,
+2/7 cardinality divergence consistent with the cardinality
+envelope's known watched-port-filter scope, score-class-
+match offline=production=class 1 ATTACK at score 1.0/1.0
+in-regime. The production-extractor empirical-fidelity
+envelope is characterised at §8.7 MC-6 (saturation upper
+bound), MC-7 (cardinality lower bound), and MC-8
+(training-distribution-coverage); the joint-conditions
+architecture is documented at §8.7 MC-11. Production
+deployment of the V8 cipher-agnostic-v2 detector at sui_F10
+scope is empirically unblocked at deployment-claim level. A
+follow-on V9 recon-detector cycle (§8.7 MC-12, 2026-05-08)
+demonstrates the same close-gate framework + observation
+substrate generalising to a different attack class without
+architectural change. The IBSR shadow-mode architecture
+(deployment against own validator infrastructure first; not
+customer infrastructure yet) and the online inference
+latency budget remain queued as production-architecture
+scoping work (engineering plan document, not deployment
+work). Production engineering execution beyond the
+extractor begins post-paper-preprint; the scoping document
+drafts after the v1 outline lands and uses the
+cipher-agnostic feature surface as the production-required
+feature set per this paper's claims.
 
 ## §8.4 Reproducibility
 
@@ -2193,14 +2203,20 @@ multi-window evidence; the gate was augmented 2026-05-07
 per D-025 (close-gate semantic-coverage rule) with a
 higher-level prediction-class equivalence criterion
 (`PHASE_1_SCORE_CLASS_MATCH`) layered on `PHASE_1_TOLERANCE`.
-Together the cycles surfaced nine substrate-paper-grade
-methodology contributions per principle 4 (plus a
-footnote-grade companion observation paired with MC-7). The
-contributions are cycle-specific learnings about
-pre-registration discipline, manifest-family structure,
-cross-chain feature-quality criteria, production-extractor
-fidelity-envelope bounds, and close-gate compositional
-coverage; each generalises beyond this project.
+A 2026-05-08 follow-on cycle landed the joint-conditions
+helper composing all three D-025 regime-scope conditions in
+one assertion, paired-live-capture closure of the
+SEMANTIC-EQUIV Branch 3 PASS path, and a V9 recon-detector
+deployment alongside V8. Together the cycles surfaced
+eleven substrate-paper-grade methodology contributions per
+principle 4 (plus a footnote-grade companion observation
+paired with MC-7). The contributions are cycle-specific
+learnings about pre-registration discipline, manifest-family
+structure, cross-chain feature-quality criteria,
+production-extractor fidelity-envelope bounds, close-gate
+compositional coverage, joint-conditions architecture, and
+layered-detection generalisation; each generalises beyond
+this project.
 
 **MC-1: Reading-1 misspecification (V1 close).**
 Step-11 V1 design's §C.2 outcome-band rationale was anchored
@@ -2367,8 +2383,18 @@ explicit OOD scope-condition handling (out-of-distribution
 gating). Three regime-scope conditions become mandatory
 pre-registration items rather than implicit assumptions:
 cardinality envelope (MC-7), saturation envelope (MC-6),
-training-distribution-coverage (this MC). Substrate-paper
-material under principle 4: pairs with MC-1 (Reading-1
+training-distribution-coverage (this MC). The empirical
+anchor was strengthened 2026-05-08 by paired-live-capture
+(offline bundle + IBSR `collect-payload` snapshot) of an
+in-distribution F10 attack-window: 5/7 features
+exact-equivalent, 2/7 cardinality divergence consistent
+with MC-7's watched-port-filter scope, score-class-match
+offline=production=class-1 ATTACK at 1.0/1.0;
+`PHASE_1_SCORE_CLASS_MATCH` PASS in-criterion-applicable-
+regime. This lifts MC-8 from "PoC plumbing demonstrated,
+real-extractor verification queued" to fully empirically
+anchored at deployment-claim level. Substrate-paper material
+under principle 4: pairs with MC-1 (Reading-1
 misspecification) and MC-5 (pre-registration-threshold-
 anchoring) as a third "pre-registration is harder than it
 looks" worked example, at compositional granularity rather
@@ -2431,7 +2457,96 @@ principle 4: corpus-design decisions about reproducer
 pipelines have downstream consequences for which features
 discriminate at the wire (§7.1 cross-refs).
 
-**Transferability**: the nine contributions generalise
+**MC-11: Joint-conditions architecture for compositional
+close-gates (2026-05-08).** Pairs with MC-8 as its
+rigorous-implementation closure. The 2026-05-07
+SEMANTIC-EQUIV harness verified D-025's
+training-distribution-coverage condition only; cardinality
+(MC-7) and saturation (MC-6) envelopes were assumed
+out-of-band. The 2026-05-08 joint-conditions helper
+(`_is_in_criterion_applicable_regime()` in
+`training/src/nr_training/inference/cross_validate.py`)
+composes all three regime-scope conditions in one
+assertion. Three architectural choices: (1) cardinality
+envelope is a feature-time gate for V8 / cipher-agnostic-v2
+(`pcap.unique_dst_ports ≥ 5 AND pcap.unique_src_ports ≥ 5`),
+but bypassed for V9 / recon-v1 because V9 USES port
+cardinality as a primary detection signal rather than
+gating on it - manifest-dispatch keeps the check
+appropriately scoped per detector. (2) Saturation envelope
+cannot be verified from feature values alone, so it is
+treated as advisory: the harness emits a "verify out-of-band"
+flag and the operator runbook owns runtime ringbuf
+monitoring (per principle 5, the operator-tunable saturation
+envelope's verification belongs in the deployment runbook,
+not in the inference feature dict). (3)
+Training-distribution-coverage delegates to the existing
+`_is_in_training_distribution`. Score-class-match assertion
+is gating ONLY when all three conditions hold (with
+condition 2 operator-asserted); out-of-regime → advisory,
+doesn't fail `all_passed`. Generalisable form: any
+compositional close-gate that needs to verify multiple
+regime-scope conditions jointly should name each condition
+explicitly, separate gating-from-features from
+gating-via-runtime-monitoring, and manifest-dispatch when a
+condition is detector-specific (V9's port cardinality is
+feature-not-gate where V8's is gate-not-feature).
+Substrate-paper material under principle 4: at the
+close-gate framework level, the joint-conditions
+architecture is the principled way to compose multiple
+regime-scope conditions without entangling their semantics.
+Shows D-025 isn't a one-condition rule; it's a band-bounded
+compose pattern, with MC-6 + MC-7 as the already-pre-
+registered envelopes and D-025's contribution being the
+third condition plus the assembly discipline.
+
+**MC-12: V9 recon-detector cycle - layered detection on a
+common substrate (2026-05-08).** Single-instance
+demonstration that the close-gate framework + production
+extractor + inference container that worked for V8
+(byte-amplification at the cipher-agnostic-v2 manifest
+layer) generalises to a different attack class
+(reconnaissance) without architectural change. Same IBSR
+sensor (StrictCounter mode added alongside ShadowPayload),
+same offline extractor (pcap parser extended with TCP-flag
+counters), same trainer template, same close-gate harness
+via manifest-dispatch added 2026-05-08. The pattern:
+detection at the substrate level (kernel-eBPF observation +
+feature aggregation + ML scoring) admits multiple
+specialised detectors layered on the same observation
+foundation - V8 (cipher-agnostic-v2, 7 features,
+byte-amplification) and V9 (recon-v1, 6 features, port-scan
+reconnaissance). Honest training-distribution discipline
+applied recursively: V9's first iteration trained on
+full-bundle pcap totals produced a model that scored 0.000
+on real per-window inference inputs (the same train/inference
+distribution-mismatch failure mode D-025 named for V8);
+iteration 2 added per-window slicing + watched-port
+filtering at training time; iteration 3 reduced the
+manifest from 14 features to 6 after discovering that ratio
+features (`syn_to_handshake_ratio`, `rst_fraction`) get
+diluted by baseline ACKs at inference time. Final V9 model
+scores 1.000 on real per-window scans, 0.000 on baseline,
+recovers within 1 window. **Honest scope**: this is a
+single-instance demonstration at the recon family, not
+"V9 generalises to all attack classes". Other attack
+classes (auth-bypass, gossip-abuse, etc.) remain forward
+work. Generalisable form: any time a detector trained on
+offline-aggregated features deploys against a production
+observer working at different aggregation granularity,
+training-time feature extraction must mirror inference-time
+feature extraction's cadence + filter exactly, OR features
+must be chosen to be invariant under the aggregation
+difference. The methodology contribution is the iterations
+themselves - the failures discriminate which features are
+robust. Substrate-paper material under principle 4: V9's
+three-iteration history makes the train/inference
+distribution discipline concrete in a way V8's single-shot
+success couldn't. Pairs with MC-8 as a "what happens in
+iteration N+1 when iteration N's lessons aren't yet
+absorbed" worked example.
+
+**Transferability**: the eleven contributions generalise
 beyond this project's cipher-agnostic-manifest evaluation.
 MC-1 and MC-5 apply to any pre-registration that anchors
 thresholds on baseline-behaviour assumptions or prior-cycle
@@ -2454,11 +2569,22 @@ MC-9 applies to any model + pipeline compose where
 downstream verdict contradicts upstream verification - the
 three checks are domain-independent. MC-10 (footnote-grade)
 applies to any cardinality-feature gate that interacts with
-L7 connection-pooling semantics. We document each
-contribution as cycle-specific evidence; reviewers may find
-the incident-driven contribution pattern useful as
-documented case studies parallel to §8.6's agent-discipline
-contributions. The MC-10 "footnote-grade" designation
+L7 connection-pooling semantics. MC-11 applies to any
+compositional close-gate that verifies multiple regime-scope
+conditions jointly, where some conditions are
+gating-from-features, others gating-via-runtime-monitoring,
+and detector-specific dispatch keeps each condition
+appropriately scoped. MC-12 applies to any
+layered-detection deployment where multiple specialised
+detectors share a common substrate (kernel-eBPF observation
++ feature aggregation + ML scoring); the V9 case shows the
+framework generalises to a different attack class without
+architectural change, and the three-iteration history of V9
+makes train/inference distribution discipline concrete. We
+document each contribution as cycle-specific evidence;
+reviewers may find the incident-driven contribution pattern
+useful as documented case studies parallel to §8.6's
+agent-discipline contributions. The MC-10 "footnote-grade" designation
 indicates a corpus-design observation worth preserving but
 not load-bearing for any current substrate-paper claim;
 unlike MC-1 through MC-9, it does not generate a
@@ -2510,7 +2636,7 @@ methodology-as-finding thesis canonically - the empirical
 substantiation runs across the V1 → V7-narrow Step-8
 leak-surface arc plus the Step-11 V1+V8 cipher-agnostic
 retrain cycle, with eight closed leak surfaces (§8.5) plus
-nine Step-11 + Phase-1 cycle methodology contributions
+eleven Step-11 + Phase-1 cycle methodology contributions
 (§8.7), plus a footnote-grade companion observation paired
 with MC-7.
 
