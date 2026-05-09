@@ -67,16 +67,29 @@ trigger becomes V9-or-later cycles along orthogonal axes
 - `bibliography.bib` - references (BibTeX).
 - `scripts/check_consistency.py` - automated consistency checker
   (see below).
+- `hooks/pre-commit` - git pre-commit hook that runs the checker
+  (see below for activation).
 - `LICENSE-TEXT.md` - CC-BY-4.0 (paper text + figures + tables).
 - `LICENSE-CODE.md` - MIT (any scripts / build tooling).
 
 ## Consistency checking
 
-Run the consistency checker before each commit:
+Run the consistency checker manually:
 
 ```sh
 python3 scripts/check_consistency.py
 ```
+
+Or wire it into your local clone as a pre-commit hook (one-time
+setup):
+
+```sh
+git config core.hooksPath hooks
+```
+
+After that, every `git commit` runs the checker first; any FAIL
+finding blocks the commit. Bypass on a deliberate WIP commit with
+`git commit --no-verify`.
 
 It encodes the recurring inconsistency patterns surfaced in manual
 review cycles - em-dashes (paper convention is hyphen), self-

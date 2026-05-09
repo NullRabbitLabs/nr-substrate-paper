@@ -1,0 +1,33 @@
+#!/usr/bin/env sh
+# Pre-commit hook: run the paper consistency checker.
+#
+# Activate once per clone with:
+#
+#     git config core.hooksPath hooks
+#
+# To bypass on a one-off commit (e.g., a WIP intermediate state),
+# use `git commit --no-verify`.
+
+# Find the repo root so the hook works regardless of where git
+# invokes it from.
+ROOT="$(git rev-parse --show-toplevel)"
+SCRIPT="$ROOT/scripts/check_consistency.py"
+
+if [ ! -f "$SCRIPT" ]; then
+    echo "pre-commit: $SCRIPT not found - skipping consistency check" >&2
+    exit 0
+fi
+
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "pre-commit: python3 not found on PATH - skipping consistency check" >&2
+    exit 0
+fi
+
+cd "$ROOT" || exit 0
+
+if ! python3 "$SCRIPT"; then
+    echo "" >&2
+    echo "pre-commit: paper consistency check failed." >&2
+    echo "  Fix the issues above, or pass --no-verify to bypass." >&2
+    exit 1
+fi
