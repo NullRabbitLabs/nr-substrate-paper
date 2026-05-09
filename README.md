@@ -65,8 +65,33 @@ trigger becomes V9-or-later cycles along orthogonal axes
 - `paper.md` - the working preprint, canonical source. Updates land
   here.
 - `bibliography.bib` - references (BibTeX).
+- `scripts/check_consistency.py` - automated consistency checker
+  (see below).
 - `LICENSE-TEXT.md` - CC-BY-4.0 (paper text + figures + tables).
 - `LICENSE-CODE.md` - MIT (any scripts / build tooling).
+
+## Consistency checking
+
+Run the consistency checker before each commit:
+
+```sh
+python3 scripts/check_consistency.py
+```
+
+It encodes the recurring inconsistency patterns surfaced in manual
+review cycles - em-dashes (paper convention is hyphen), self-
+references (`the substrate paper` → `this paper`), stale state
+phrases (`Joint Outcome`, `in flight`), forbidden absolute paths,
+MC-N coverage (definitions ↔ references), D-NNN coverage (in-text
+↔ Appendix B table), Appendix B title range, bibliography
+citation/definition cross-check, count-phrase consistency (e.g.,
+"eleven contributions" matching the actual MC count), §5.1.1
+principle count, §8.6 upgrade-incident count, mutually-exclusive
+state claims (e.g., `nr-bundle-spec` "private until X" vs
+"published Y"), and §-cross-reference resolution.
+
+Exit code 0 if all checks pass, 1 if any FAIL, 2 on usage error.
+Stdlib only; no external dependencies.
 
 ## Companion artefacts
 

@@ -711,9 +711,9 @@ test-case for the claim's forward applicability.
 The format publication strategy (D-012) decomposes this
 paper's contribution into three artefacts:
 
-- **`nr-bundle-spec` v0.1.0** - landed at
-  [github.com/NullRabbitLabs/nr-bundle-spec][nrbundle] under
-  MIT license (private repo until 2026-06-05 pending
+- **`nr-bundle-spec` v0.1.0** [bundle_spec_v0_1_0] - landed
+  at [github.com/NullRabbitLabs/nr-bundle-spec][nrbundle]
+  under MIT license (private repo until 2026-06-05 pending
   coordinated-disclosure window closure on Sui F10/F14 +
   Solana F10, public after). JSON Schema + Pydantic reference
   + Python and Rust parsers + 5 example bundles + CI for
@@ -2026,8 +2026,8 @@ Phase-1 production-extractor close-gate pinning (per §8.3 +
   `scripts/phase1_cross_validate.py` (offline-vs-production
   per-feature comparison against `PHASE_1_TOLERANCE`).
 
-A reader with the IBSR debug binary (`/data/cargo/target/debug/ibsr`
-at the pinned commit), a Sui localnet, and the F10 reproducer
+A reader with the IBSR debug binary at the pinned commit, a
+Sui localnet, and the F10 reproducer
 (`chains/sui/findings/F10/reproducer.py`) can replay each of
 the four sub-experiments and obtain numerically-identical
 feature dicts within `PHASE_1_TOLERANCE` (cardinality + max-
