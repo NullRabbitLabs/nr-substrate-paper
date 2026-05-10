@@ -1957,24 +1957,53 @@ are the same problem at different boundaries; both resolve
 via joint training, both characterise *which* features
 carry the cross-cutting signal.
 
-**Honest scope (Phase A/B).** Multi-class folded results
-are *in-distribution-fold across both chains*, not zero-shot
-Sui→Solana. The "trained on Sui only, works on Solana
-zero-shot" claim is *not* what these numbers support; the
-operational claim is "trained jointly, recall holds
-per-chain" (the pattern when adding a chain to coverage).
-Zero-shot cross-chain multi-class is banked as forward
-work. Single Solana implementation (`agave` via
-`solana-test-validator`); other implementations may surface
-different patterns. n_solana per primitive at LOPO floor
-(51-52) is sufficient for the headline finding but
-per-posture stratification needs more diversity. Binary V8
-benign FPR climbed to 15-17% on the wider cross-chain cache
-(from V8 close-out's ~1-2%); the multi-class folded V8
-absorbs this issue (1.000 precision), but the binary
-deployment-claim cross-chain remains qualified pending
-investigation of corpus-drift / feature-distribution-shift /
-per-primitive-variation hypotheses.
+**Mechanistic refinement (zero-shot multi-class +
+ablation; 2026-05-10 PM).** Beyond the folded-mode joint
+training above, a Sui-only-trained multi-class softmax was
+evaluated zero-shot against held-out Solana attack bundles.
+Per-class zero-shot recall: V8 1.000, V11 0.981, V14 0.020.
+Two complementary diagnostic protocols characterise the
+mechanism: SHAP attribution (`TreeExplainer` on the inner
+HGB[0] of the 5-fold `CalibratedClassifierCV`) measures
+prediction-contribution intra-distribution; feature
+ablation (re-train multi-class with one category removed,
+measure cross-chain recall change) measures
+transfer-necessity. The two diagnostics disagree
+informatively for V11 - SHAP attributes `pcap.*` 22.5%
+(rank 3 by contribution) but ablation reveals `pcap.*` is
+rank 1 by causal necessity (removing it collapses V11
+zero-shot recall 98% → 0%). §8.7 MC-18 lays out the
+resulting three-mode taxonomy: V8 single-category clean
+transfer (Mode 1); V11 multi-category causal-conjunctive
+transfer with `pcap.*` necessary (Mode 2); V14
+chain-specific-feature poisoning where ablating `pcap.*`
+*lifts* recall 2% → 19.6% and ablating `host.*` + `resp.*`
+lifts to 39.2% (Mode 3 - active harm, not signal absence).
+
+**Honest scope (Phase A/B + zero-shot/ablation).**
+Multi-class folded results are *in-distribution-fold across
+both chains*, not zero-shot. The folded-mode "100%
+per-chain recall" claim is the operational pattern when
+adding a chain to coverage (joint training); the zero-shot
+numbers above are the Sui-only-trained model's
+out-of-distribution Solana recall. Single Solana
+implementation (`agave` via `solana-test-validator`); other
+implementations may surface different patterns. n_solana
+per primitive at LOPO floor (51-52) is sufficient for the
+headline findings but per-posture stratification would
+strengthen them. Binary V8 benign FPR climbed to 15-17% on
+the wider cross-chain cache (from V8 close-out's ~1-2%);
+the multi-class folded V8 absorbs this issue (1.000
+precision), but the binary deployment-claim cross-chain
+remains qualified pending investigation of corpus-drift /
+feature-distribution-shift / per-primitive-variation
+hypotheses. Ablation is per-category, not per-feature;
+finer-grained per-feature ablation would identify specific
+poisoning features. `app.*` not ablated (53 features, low
+SHAP attribution). TreeExplainer SHAP on inner HGB[0] of
+`CalibratedClassifierCV` is an approximation (the
+calibration ensemble can't be directly attributed); feature
+ranks stable across folds.
 
 
 # §8 Discussion + limitations
@@ -2943,43 +2972,99 @@ section's nuance - the framework supports multiple
 cross-chain transfer modes; manifest composition determines
 which mode applies.
 
-**MC-18: Multi-class joint training resolves
-chain-specificity (Phase B, 2026-05-10).** Pairs with
-MC-17b as its architectural-resolution closure. Same Solana
-bundles, same feature surface, same architectural choice
-(HGB+isotonic): the change is training-time corpus includes
-both chains' attack instances jointly. Binary V14
-cross-chain: 0% recall on SOL_F14. Multi-class folded V14
-(Sui+Sol joint training): **100% recall on SOL_F14**.
-Binary V11 cross-chain: 0% recall on SOL_P07. Multi-class
-folded V11: **100% recall** (273/274). The framework
-supports two chain-coverage architectures without taxonomy
-/ feature-extractor / trainer changes: (1) binary,
-per-chain retrain - train Sui-V14 + Solana-V14 separately,
-N chains = N detectors per class, per-detector
-explainability stays clean; (2) multi-class, single joint
-model - one V14-class column in a multi-class softmax
-trained jointly across chains, single model handles all
-chains for the class, sacrifices per-detector
-explainability for unified deployment. The choice is
-per-deployment policy, not architectural. Pairs with MC-13
-(binary cross-fire ceiling) + MC-14 (multi-class resolves
-cross-fire) to give a clean two-axis story: cross-class
-confusion (V11/V12 share signal regions; MC-13/14) and
-cross-chain transfer (V14 host.* don't transfer; MC-17/18)
-*are the same problem at different boundaries* - both
-resolve via joint training, both characterise *which*
-features carry the cross-cutting signal; in both cases
-multi-class softmax with joint training is the resolution
-layer and the binary stack stays the headline. **Bonus
-observation, banked**: folded multi-class also resolves
-binary V8's benign-FPR climb (15-17% on the wider
-cross-chain cache to 1.000 multi-class precision) -
-suggestive of a deeper architectural property where
-multi-class training across more diverse data resolves
-binary calibration drift; not yet confirmed as a framework
-claim. Substrate-paper material under principle 4:
-§multi-class section's strongest empirical anchor.
+**MC-18: Cross-chain transfer in multi-class softmax is
+feature-semantic (three-mode taxonomy, ablation-grounded;
+2026-05-10).** Pairs with MC-17b as its
+architectural-resolution closure and supersedes earlier
+"cipher-agnostic features bridge" / "redundant signal
+across feature categories" hypotheses with a stronger
+ablation-grounded claim. Each attack class's transferability
+is determined by what fraction of its load-bearing features
+capture *chain-agnostic semantic patterns* versus
+*chain-specific patterns* the trained model learned to
+discriminate. Three empirically-distinguished modes apply,
+characterisable per-class via three complementary
+diagnostics (train-on-A/eval-on-B from MC-17b; SHAP
+attribution; feature ablation):
+
+- **Mode 1: single-category clean transfer** (V8 evidence).
+  V8 transfers via its byte-shape feature surface entirely;
+  ablating `host.*` or `pcap.*` has zero effect on recall.
+  The original "cipher-agnostic bridges" framing was right
+  *in spirit* (these are byte-shape invariants) but wrong
+  about feature-prefix - chain-agnostic semantics live in
+  some `resp.*` features (`resp.amp_ratio_*`,
+  `resp.req/resp_bytes_max`) too, by manifest design.
+  Maps to attack classes whose load-bearing features are
+  chain-agnostic by semantic design.
+- **Mode 2: multi-category causal-conjunctive transfer**
+  (V11 evidence). V11 zero-shot recall on SOL_P07 is 98%;
+  ablating any one major feature category causes recall
+  drop (without `host.*`: 98% → 54%; without `resp.*`:
+  98% → 60%; without `pcap.*`: 98% → **0%** collapse).
+  This is *not* redundancy - the categories are causally
+  conjunctive, with `pcap.*` causally necessary. SHAP and
+  ablation disagree informatively here: SHAP attributes
+  22.5% to `pcap.*` (rank 3 by contribution) but ablation
+  reveals `pcap.*` is rank 1 by causal necessity. SHAP
+  measures prediction-contribution intra-distribution;
+  ablation measures transfer-necessity for cross-chain
+  generalisation.
+- **Mode 3: chain-specific-feature poisoning** (V14
+  evidence; the most novel finding). V14 zero-shot recall
+  on SOL_F14 is 2%; ablating `pcap.*` lifts it to **19.6%**
+  (10× improvement); ablating `host.*` + `resp.*` lifts it
+  to **39.2%** (20× improvement). The Sui-trained model
+  learned chain-specific patterns (sui-node tokio TCP
+  stack window sizes / packet pair patterns) that
+  systematically *push SOL_F14 bundles AWAY from V14* with
+  high discriminative weight. Removing those features
+  removes the chain-specific decision pressure; the model
+  defaults toward V14 when other features support it. This
+  is **active harm, not signal absence**.
+
+Joint training (Phase B's folded mode) achieves what
+ablation does - removes chain-specific decision pressure
+by training on both chains' values simultaneously - without
+the manual feature-removal cost. The 100% folded recall on
+V14 represents the upper bound the ablation experiment
+approaches by removing the worst-poisoning features. The
+framework supports two chain-coverage architectures without
+taxonomy / feature-extractor / trainer changes: (1) binary,
+per-chain retrain - N chains = N detectors per class,
+per-detector explainability stays clean; (2) multi-class,
+single joint model - one column per class in a softmax
+trained jointly across chains. The choice is per-deployment
+policy, not architectural. **Bonus observation banked**:
+folded multi-class also resolves binary V8's benign-FPR
+climb (15-17% on the wider cross-chain cache to 1.000
+multi-class precision) - suggestive of a deeper property
+where multi-class training across more diverse data
+resolves binary calibration drift; not yet confirmed as a
+framework claim. Pairs with MC-13 + MC-14 to give a clean
+two-axis story: cross-class confusion (V11/V12 share signal
+regions) and cross-chain transfer (chain-specific features
+poison V14) *are the same problem at different boundaries* -
+both resolve via joint training; in both cases multi-class
+softmax stays the resolution layer and the binary stack
+stays the headline.
+
+**Methodology contribution at the diagnostic-surface
+level**: this work elevates ablation-as-diagnostic to a
+first-class methodology contribution alongside SHAP and
+train-on-A/eval-on-B. The three diagnostics are
+complementary, not redundant: train-on-A/eval-on-B (MC-17b)
+characterises whether a manifest is chain-agnostic vs
+chain-specific; SHAP attribution characterises what
+features contribute to prediction intra-distribution;
+feature ablation characterises which features are causally
+necessary for cross-domain transfer. Together they let an
+operator characterise any new attack class's cross-chain
+transferability before deploying it. Substrate-paper
+material under principle 4: §multi-class section's
+strongest empirical anchor + a third diagnostic protocol
+for the framework's transferability-characterisation
+surface.
 
 **Transferability**: the eighteen contributions generalise
 beyond this project's cipher-agnostic-manifest evaluation.
@@ -3043,13 +3128,21 @@ chain-specific by design, the train-on-A/eval-on-B
 evaluation reveals which manifests transfer cross-chain,
 and the per-class manifest composition encodes the
 transferability story as a testable hypothesis. MC-18
-applies to any binary-vs-rest stack hitting cross-chain
-chain-specificity (MC-17b) - multi-class softmax with
-joint Sui+Solana-style training across chains recovers
-chain-specific manifests to 100% per-chain recall in folded
-mode; same architectural pattern as MC-14's resolution of
-cross-class cross-fire (one operational pattern at two
-boundaries). We document
+applies to any cross-chain ML detection compose where
+per-class transferability varies: the three-mode taxonomy
+(single-category clean / multi-category causal-conjunctive
+/ chain-specific-feature poisoning) is characterisable
+empirically per-class via three complementary diagnostics
+(train-on-A/eval-on-B from MC-17b, SHAP attribution,
+feature ablation). Joint training resolves all three modes
+operationally (folded-mode recovers chain-specific
+manifests to 100% per-chain recall) - same architectural
+pattern as MC-14's resolution of cross-class cross-fire
+(one operational pattern at two boundaries).
+Ablation-as-diagnostic generalises beyond cross-chain
+transfer to any cross-domain ML compose where transfer
+necessity diverges from intra-distribution feature
+contribution. We document
 each contribution as cycle-specific evidence; reviewers may
 find the incident-driven contribution pattern useful as
 documented case studies parallel to §8.6's agent-discipline
