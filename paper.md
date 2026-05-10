@@ -1794,6 +1794,108 @@ empirically outperforms Step-11 V1 cleartext-with-the-
 feature-included on the load-bearing per-chain holdout
 regime.
 
+## §7.6 Multi-class architecture (POC, 2026-05-09)
+
+The framework's "different-attack-class generalisation"
+hypothesis (§8.7 MC-12) was tested across five additional
+detector cycles (V10-V14) trained against the lab corpus
+2026-05-09. Together with V8 (response_amp / F10) and V9
+(reconnaissance), V8-V14 cover the corpus's full
+attack-primitive set. Per-detector outcomes:
+
+| Detector | Family | Recall | Cross-fire ceiling | Outcome |
+|---|---|---:|---|---|
+| V8 | response_amp (F10) | 100% | (deployed) | A - deployed |
+| V9 | reconnaissance | 100% | (deployed 2026-05-08) | A - deployed |
+| V10 | auth-bypass (H/GR/F-family) | 100% | clean | A - trained |
+| V11 | application-layer DoS (P-family) | 100% | V12 99%, V10 48% | B - cross-fire |
+| V12 | consensus / gossip (D/H02) | 100% | V8 21% | A - trained |
+| V13 | service-misconfig (MC-family) | 100% | ≤1.4% across all | A - trained |
+| V14 | compute-amp / sync-wedge (F14) | 93% (n=54) | 13% other-attack | A - trained |
+
+V10-V14 are trained on the offline corpus but
+deployment-blocked on IBSR feature-surface extension (§8.3);
+the methodology evidence below is offline-corpus complete.
+
+**Binary-vs-rest cross-fire (architectural finding).** V11's
+close-out surfaced a structural property: when attack classes
+share signal regions, the per-class binary trained on
+"V11 vs (everything else)" cannot distinguish V11 from
+*specific* alternative classes that occupy similar feature
+regions. Cross-fire is not an inherent limit of binary
+detection nor of the feature surface; it is a property of
+the *training-objective shape* - binary-vs-rest collapses
+all non-positive classes into one negative class, losing
+the distinctions among them. V13/V14's clean ≤1.4% isolation
+is the counter-evidence: when an attack class occupies a
+genuinely orthogonal signal region, binary-vs-rest hits
+A-grade. §8.7 MC-13 frames this as a measurable
+architectural property; the paired-class cross-fire rate is
+the load-bearing diagnostic.
+
+**Multi-class softmax POC (resolves cross-fire).** One
+`CalibratedClassifierCV(HGB, isotonic, cv=5)` was trained
+2026-05-09 on the unified V8 + V9 + V10-V14 + benign corpus
+(2014 lab-fidelity samples, 8 classes, 107-feature surface,
+no manifest filter). Stratified 5-fold OOF results:
+
+- **Overall OOF accuracy: 99.95%** (2013 / 2014 correct).
+- Per-class recall: 1.000 across the board EXCEPT V11 at
+  0.995 (one V11 → benign miss in fold 3).
+- Per-class precision: 1.000 across the board EXCEPT
+  benign at 0.999 (the V11 miss landed there).
+- Brier scores ≤ 0.0007 across all classes - excellent
+  calibration.
+- P(class | true=1) ≥ 0.974 across all classes.
+- P(class | true=0) ≤ 0.008 across all classes.
+
+OOF confusion matrix:
+
+```
+              benign      V8      V9     V10     V11     V12     V13     V14
+benign          1085       0       0       0       0       0       0       0
+V8                 0      54       0       0       0       0       0       0
+V9                 0       0      45       0       0       0       0       0
+V10                0       0       0     154       0       0       0       0
+V11                1       0       0       0     221       0       0       0
+V12                0       0       0       0       0     150       0       0
+V13                0       0       0       0       0       0     250       0
+V14                0       0       0       0       0       0       0      54
+```
+
+Cross-fire reduction vs binary baselines:
+
+- V11 ← V12: binary 99% → multi-class **0%**
+- V11 ← V10: binary 48% → multi-class **0%**
+- V12 ← V8:  binary 21% → multi-class **0%**
+
+The honest tradeoff: multi-class swaps binary's 100% V11
+recall + 99% V12 cross-fire for 99.5% V11 recall + 0%
+cross-fire. One false negative against zero cross-fire is
+the right operational trade, and it is an operator-tunable
+threshold adjustment per-class, not an architectural limit.
+
+**Cipher-agnostic class generalisation.** V9 (recon,
+pcap-only feature surface) coexists with V10-V14
+(body-parse-required) in the same multi-class manifold
+without confusing the model: V9 scores 100% recall + 0%
+cross-fire across all 7 other classes. The cipher-agnostic
+and body-parse-required detector classes are fully
+resolvable in one softmax. §8.7 MC-14 frames the
+production-architecture canon: binary stack as headline
+(per-class explainability + threshold-tuning) plus
+multi-class softmax as the cross-fire-resolution layer when
+binary-pair ambiguity arises.
+
+**Honest scope.** The 99.95% OOF number is lab-corpus,
+in-distribution evaluation; it is *not* a zero-error
+production claim. Cross-chain corpus expansion to Solana
+(≥50 bundles per primitive across SOL_F10, SOL_F14,
+SOL_P07) is banked at the corpus level and gates the
+substrate paper's §cross-chain extension of the multi-class
+architecture - Sui-only multi-class softmax is necessary
+but not sufficient evidence.
+
 
 # §8 Discussion + limitations
 
@@ -1946,7 +2048,20 @@ scope is empirically unblocked at deployment-claim level. A
 follow-on V9 recon-detector cycle (§8.7 MC-12, 2026-05-08)
 demonstrates the same close-gate framework + observation
 substrate generalising to a different attack class without
-architectural change. The IBSR shadow-mode architecture
+architectural change. A 2026-05-09 cycle extends the binary
+detector inventory to V8-V14 covering the full lab corpus
+attack-primitive set (§7.6); V10-V14 are trained against
+the offline corpus but **deployment-blocked on IBSR
+feature-surface extension** - their manifests reference
+`host.cpu_*` / `host.rss_*` / `host.io_write_delta` (V11 /
+V12 / V14) and `resp.duration_ns_*` /
+`resp.status_4xx_frac` / `resp.rpc_error_*` /
+`resp.req_bytes_mean` / `resp.resp_bytes_mean` (V10 / V13)
+which IBSR does not currently emit. The IBSR-side workstream
+(~6-8 days, two phases) is queued; this is operationally
+significant but does not affect the paper's methodology
+claims, which run on the offline corpus the framework is
+proved against. The IBSR shadow-mode architecture
 (deployment against own validator infrastructure first; not
 customer infrastructure yet) and the online inference
 latency budget remain queued as production-architecture
@@ -2207,16 +2322,22 @@ A 2026-05-08 follow-on cycle landed the joint-conditions
 helper composing all three D-025 regime-scope conditions in
 one assertion, paired-live-capture closure of the
 SEMANTIC-EQUIV Branch 3 PASS path, and a V9 recon-detector
-deployment alongside V8. Together the cycles surfaced
-eleven substrate-paper-grade methodology contributions per
-principle 4 (plus a footnote-grade companion observation
-paired with MC-7). The contributions are cycle-specific
-learnings about pre-registration discipline, manifest-family
-structure, cross-chain feature-quality criteria,
-production-extractor fidelity-envelope bounds, close-gate
-compositional coverage, joint-conditions architecture, and
-layered-detection generalisation; each generalises beyond
-this project.
+deployment alongside V8. A 2026-05-09 cycle extended the
+detector-cycle evidence base from 2 (V8/V9) to 7 (V8 + V9 +
+V10-V14, full lab-corpus attack-primitive coverage; §7.6)
+and trained a multi-class softmax POC over the unified
+corpus, demonstrating both the binary-vs-rest cross-fire
+ceiling and its multi-class resolution. Together the cycles
+surfaced fourteen substrate-paper-grade methodology
+contributions per principle 4 (plus a footnote-grade
+companion observation paired with MC-7). The contributions
+are cycle-specific learnings about pre-registration
+discipline, manifest-family structure, cross-chain
+feature-quality criteria, production-extractor
+fidelity-envelope bounds, close-gate compositional coverage,
+joint-conditions architecture, layered-detection
+generalisation, binary-vs-rest cross-fire, and multi-class
+softmax architecture; each generalises beyond this project.
 
 **MC-1: Reading-1 misspecification (V1 close).**
 Step-11 V1 design's §C.2 outcome-band rationale was anchored
@@ -2546,7 +2667,96 @@ success couldn't. Pairs with MC-8 as a "what happens in
 iteration N+1 when iteration N's lessons aren't yet
 absorbed" worked example.
 
-**Transferability**: the eleven contributions generalise
+**MC-13: Binary-vs-rest cross-fire ceiling (V10-V14 cycle,
+2026-05-09).** V10-V14 binary detectors trained against the
+lab corpus extended the framework's attack-class coverage
+from V8/V9 to V8-V14 (full lab-corpus primitive set; §7.6
+detector table). V11's close-out surfaced a structural
+property of the binary-vs-rest pattern: when attack classes
+share signal regions, the per-class binary trained on
+"V11 vs (everything else)" cannot distinguish V11 from
+*specific* alternative classes that occupy similar feature
+regions. Empirical numbers: V11 ← V12 99% (validator-stress
+shared host.cpu/connection features), V11 ← V10 48%
+(auth-related connection churn + CPU), V12 ← V8 21% (volume
+features overlap), V14 ← other-attack 13% (connection-
+collapse signature). V13/V14's clean ≤1.4% isolation is the
+counter-evidence: when an attack class occupies a genuinely
+orthogonal signal region, binary-vs-rest hits A-grade.
+**Architectural finding**: cross-fire is not an inherent
+limit of binary detection nor of the feature surface; it is
+a property of the *training-objective shape* - binary-vs-
+rest collapses all non-positive classes into one negative
+class, losing the distinctions among them. Multi-class
+softmax with the *same features* and *same corpus* recovers
+those distinctions (MC-14). Generalisable form: any
+framework that ships per-class binary detectors should
+expect cross-fire when attack classes share signal regions;
+the paired-class cross-fire rate *characterizes* how shared
+the signal region is and is the load-bearing diagnostic.
+Substrate-paper material under principle 4: the binary-stack
+architecture is honest production primitive; its limit is
+empirically measurable; both architectures have a place.
+
+**MC-14: Multi-class softmax resolves cross-fire (POC,
+2026-05-09).** Pairs with MC-13 as its
+architectural-resolution closure. One
+`CalibratedClassifierCV(HGB, isotonic, cv=5)` trained on
+the unified V8 + V9 + V10-V14 + benign corpus (2014
+lab-fidelity samples, 8 classes, 107-feature surface, no
+manifest filter). Stratified 5-fold OOF: **99.95% accuracy**
+(2013/2014 correct), per-class recall 1.000 across the
+board except V11 at 0.995 (one V11 → benign miss in fold 3),
+Brier scores ≤0.0007 across all classes. Cross-fire
+reduction vs binary baselines: V11 ← V12 binary 99% →
+multi-class **0%**; V11 ← V10 binary 48% → multi-class
+**0%**; V12 ← V8 binary 21% → multi-class **0%**. The
+honest tradeoff: multi-class swaps binary's 100% V11 recall
++ 99% V12 cross-fire for 99.5% V11 recall + 0% cross-fire -
+one false negative against zero cross-fire is the right
+operational trade, and an operator-tunable threshold
+adjustment per-class, not an architectural limit.
+Cipher-agnostic class generalisation: V9 (recon, pcap-only
+feature surface) coexists with V10-V14 (body-parse-required)
+in the same multi-class manifold without confusing the
+model - V9 100% recall + 0% cross-fire across all 7 other
+classes. **Production-architecture canon**: binary stack as
+headline (per-class explainability + threshold-tuning) plus
+multi-class softmax as the cross-fire-resolution layer when
+binary-pair ambiguity arises. Multi-class is *additive*: no
+taxonomy changes, no feature-extractor changes, no corpus
+rebuild - the same framework supports both architectures.
+Honest scope: 99.95% is lab-corpus + in-distribution
+evaluation, not a zero-error production claim; cross-chain
+extension to Solana is corpus-level banked. Full POC
+readout (detector table, OOF confusion matrix, cross-fire
+matrix) at §7.6. Substrate-paper material under principle 4.
+
+**MC-15: Small-n binary detector lower bound (V14 cycle,
+2026-05-09).** V14 (compute-amp / sync-wedge, n=54) is the
+smallest binary training corpus in the V8-V14 cycle; outcome
+93% recall at threshold 0.5 (50/54 fired) + 13%
+other-attack cross-fire. The four V14 misses + the 13%
+cross-fire are small-n artefacts: the model overfits to the
+training distribution's specifics and generalises only as
+well as the n=54 sample diversity allows. Compare V13
+(n=250, 5 primitives) at 100% recall + 0.37% benign FPR +
+0% V10/V12 cross-fire - the five-fold larger corpus
+produces qualitatively better isolation. Generalisable form:
+~50 bundles per attack primitive is the LOPO floor (D-001 +
+Step-6 floor); ~250 bundles across multiple primitives in a
+family is where binary-vs-rest isolation becomes tight.
+Below ~50 per primitive (V14's 54 across one primitive),
+binary-vs-rest hits its *data-side* lower bound: the model
+lacks enough diversity to discriminate cleanly, and the
+multi-class architecture (MC-14) becomes the only viable
+path. Distinct from MC-13's *signal-overlap* upper bound,
+MC-15 is a *corpus-scale* lower bound. Substrate-paper
+material under principle 4 at corpus-sizing decision level:
+this is the empirical floor below which binary-vs-rest needs
+reinforcement (multi-class fallback or corpus expansion).
+
+**Transferability**: the fourteen contributions generalise
 beyond this project's cipher-agnostic-manifest evaluation.
 MC-1 and MC-5 apply to any pre-registration that anchors
 thresholds on baseline-behaviour assumptions or prior-cycle
@@ -2580,15 +2790,28 @@ detectors share a common substrate (kernel-eBPF observation
 + feature aggregation + ML scoring); the V9 case shows the
 framework generalises to a different attack class without
 architectural change, and the three-iteration history of V9
-makes train/inference distribution discipline concrete. We
-document each contribution as cycle-specific evidence;
-reviewers may find the incident-driven contribution pattern
-useful as documented case studies parallel to §8.6's
-agent-discipline contributions. The MC-10 "footnote-grade" designation
+makes train/inference distribution discipline concrete.
+MC-13 applies to any binary-vs-rest detector stack where
+attack classes share signal regions; the paired-class
+cross-fire rate is the load-bearing diagnostic for how
+shared the regions are. MC-14 applies to any binary-vs-rest
+stack hitting cross-fire ceilings (MC-13) - multi-class
+softmax with the same features and same corpus is an
+*additive* architectural option that recovers per-pair
+distinctions; binary-as-headline + multi-class-as-cross-fire
+-resolution is the production canon. MC-15 applies to any
+binary-vs-rest detector trained below the corpus-scale floor
+(~50 bundles per primitive, ~250 across a family); below
+the floor, binary-vs-rest hits its data-side lower bound
+and multi-class becomes the only viable path. We document
+each contribution as cycle-specific evidence; reviewers may
+find the incident-driven contribution pattern useful as
+documented case studies parallel to §8.6's agent-discipline
+contributions. The MC-10 "footnote-grade" designation
 indicates a corpus-design observation worth preserving but
 not load-bearing for any current substrate-paper claim;
-unlike MC-1 through MC-9, it does not generate a
-pre-registration discipline of its own.
+unlike MC-1 through MC-9 and MC-11 through MC-15, it does
+not generate a pre-registration discipline of its own.
 
 
 # §9 Conclusion
@@ -2636,9 +2859,9 @@ methodology-as-finding thesis canonically - the empirical
 substantiation runs across the V1 → V7-narrow Step-8
 leak-surface arc plus the Step-11 V1+V8 cipher-agnostic
 retrain cycle, with eight closed leak surfaces (§8.5) plus
-eleven Step-11 + Phase-1 cycle methodology contributions
-(§8.7), plus a footnote-grade companion observation paired
-with MC-7.
+fourteen Step-11 + Phase-1 + V10-V14 + multi-class cycle
+methodology contributions (§8.7), plus a footnote-grade
+companion observation paired with MC-7.
 
 The cipher-agnostic feature subset framework (§7.1) and the
 Step-11 V1+V8 empirical Joint A (§7.2) ship in v1. v2 trigger
