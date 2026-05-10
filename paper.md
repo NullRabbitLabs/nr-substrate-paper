@@ -221,8 +221,10 @@ per-chain holdout direction, the methodology-auditor agent
 gate, and the V1 → V7-narrow iteration arc. §6 presents the
 V7-narrow multi-mechanism finding as the technical
 centerpiece. §7 documents the cipher-agnostic feature-subset
-framework and the Step-11 V1 + V8 empirical Joint A
-(closed 2026-05-04). §8 covers limitations,
+framework, the Step-11 V1 + V8 empirical Joint A (closed
+2026-05-04), and the 2026-05-09 multi-class softmax POC
+over the V8-V14 detector inventory (§7.6). §8 covers
+limitations,
 scope, production-deployment companion, reproducibility,
 prior-cycle leak-surface closures, and methodology
 contributions about agent-discipline patterns. §9 concludes.
@@ -1494,8 +1496,10 @@ parsing - pre-registers an empirical retention measurement
 retrain results that close the cycle. v1 ships the framework
 + pre-registration + **empirical Joint A on the
 cipher-agnostic claim**; §7.2 carries the V1 and V8 retrain
-numbers, and §7.5 explains the >100% retention mechanism.
-The v2 update path becomes V9-or-later cycles plus
+numbers, §7.5 explains the >100% retention mechanism, and
+§7.6 carries the 2026-05-09 multi-class softmax POC over
+V8-V14 + benign that resolves the binary-vs-rest cross-fire
+ceiling. The v2 update path becomes V9-or-later cycles plus
 cipher-suite variation, not Step-11 closure.
 
 ## §7.1 Cipher-agnostic feature subset (D-020)
@@ -1978,6 +1982,24 @@ addition tests both the chain-asymmetric mechanism finding's
 generalisation and the per-chain holdout direction's
 empirical reach beyond n=2.
 
+**Cross-chain corpus depth (status, 2026-05-10)**:
+`corpus_v1.6` landed 141 new Solana attack bundles
+(`s3://nr-chainhunt-xyz/corpus/v1.6/`, 181 MB), bringing
+three Solana primitives above the LOPO floor (≥50 per
+primitive): `SOL_F10_multi_get_accounts_amp` 51,
+`SOL_F14_simulate_transaction_sync_wedge` 51,
+`SOL_P07_get_program_accounts_filter_miss` 52. The
+cross-chain LOPO *corpus prerequisite* is now landed for the
+F10 / F14 / P07 primitives; the *cross-chain LOPO evaluation
+itself* (Sui-trained V8 / V14 inference against SOL_F10 /
+SOL_F14 bundles, per-primitive recall + benign FPR +
+cross-class confusion) is queued forward work outside v1.
+The n=2 Sui ↔ Solana evidence base graduates from
+"taxonomy-mapping evidence" (the family schema mapping
+Solana attacks onto existing families) to "LOPO-pending
+evidence" - the load-bearing block on cross-chain LOPO
+numbers is no longer corpus-side.
+
 **Cipher-suite sensitivity not measured in v1.** Step-11
 Component 1 (closed 2026-05-04; §7.2) measured cipher-agnostic
 feature subset retention under TLS 1.3 default cipher suites only.
@@ -2327,8 +2349,12 @@ detector-cycle evidence base from 2 (V8/V9) to 7 (V8 + V9 +
 V10-V14, full lab-corpus attack-primitive coverage; §7.6)
 and trained a multi-class softmax POC over the unified
 corpus, demonstrating both the binary-vs-rest cross-fire
-ceiling and its multi-class resolution. Together the cycles
-surfaced fourteen substrate-paper-grade methodology
+ceiling and its multi-class resolution. A 2026-05-10
+follow-on landed `corpus_v1.6` - 141 new Solana attack
+bundles bringing three primitives (SOL_F10 / SOL_F14 /
+SOL_P07) above the LOPO floor and corpus-unblocking the
+cross-chain LOPO evaluation queued for v2. Together the
+cycles surfaced fifteen substrate-paper-grade methodology
 contributions per principle 4 (plus a footnote-grade
 companion observation paired with MC-7). The contributions
 are cycle-specific learnings about pre-registration
@@ -2756,7 +2782,31 @@ material under principle 4 at corpus-sizing decision level:
 this is the empirical floor below which binary-vs-rest needs
 reinforcement (multi-class fallback or corpus expansion).
 
-**Transferability**: the fourteen contributions generalise
+**MC-16: Generalised sweep-harness pattern (corpus_v1.6,
+2026-05-10).** Methodology-tooling contribution at
+infrastructure level, paired with the bundle-contract
+discipline at output-format level. The Solana cross-chain
+sweep harness landed alongside `corpus_v1.6` demonstrates a
+per-primitive parameter-dispatch pattern: each attack
+primitive's posture mapping has primitive-specific knobs
+(F10 `--keys-per-request` for request-side amplification,
+F14 `--n-memos` for compute-time amplification, P07
+`--memcmp-bytes` for filter selectivity), and the harness
+encapsulates the per-primitive flag mapping as configuration
+data + dispatches generically over a single launcher. The
+bundle contract abstracts the *output* format; this harness
+abstracts the *sweep input*. Same operational principle.
+Generalisable form: any framework that ships per-primitive
+attack reproducers with primitive-specific parameter knobs
+benefits from a sweep harness that data-drives the
+per-primitive flag mapping, avoiding both per-primitive bash
+sweep scripts (combinatorial growth) and per-primitive
+Python launchers (duplication). The data-config + generic
+launcher pattern scales as the primitive count grows.
+Substrate-paper material under principle 4 at
+methodology-tooling level: small but durable.
+
+**Transferability**: the fifteen contributions generalise
 beyond this project's cipher-agnostic-manifest evaluation.
 MC-1 and MC-5 apply to any pre-registration that anchors
 thresholds on baseline-behaviour assumptions or prior-cycle
@@ -2803,14 +2853,19 @@ distinctions; binary-as-headline + multi-class-as-cross-fire
 binary-vs-rest detector trained below the corpus-scale floor
 (~50 bundles per primitive, ~250 across a family); below
 the floor, binary-vs-rest hits its data-side lower bound
-and multi-class becomes the only viable path. We document
+and multi-class becomes the only viable path. MC-16 applies
+to any framework shipping per-primitive attack reproducers
+with primitive-specific parameter knobs - a data-config +
+generic-launcher sweep harness avoids the combinatorial
+growth of per-primitive bash scripts and the duplication of
+per-primitive Python launchers. We document
 each contribution as cycle-specific evidence; reviewers may
 find the incident-driven contribution pattern useful as
 documented case studies parallel to §8.6's agent-discipline
 contributions. The MC-10 "footnote-grade" designation
 indicates a corpus-design observation worth preserving but
 not load-bearing for any current substrate-paper claim;
-unlike MC-1 through MC-9 and MC-11 through MC-15, it does
+unlike MC-1 through MC-9 and MC-11 through MC-16, it does
 not generate a pre-registration discipline of its own.
 
 
@@ -2859,9 +2914,10 @@ methodology-as-finding thesis canonically - the empirical
 substantiation runs across the V1 → V7-narrow Step-8
 leak-surface arc plus the Step-11 V1+V8 cipher-agnostic
 retrain cycle, with eight closed leak surfaces (§8.5) plus
-fourteen Step-11 + Phase-1 + V10-V14 + multi-class cycle
-methodology contributions (§8.7), plus a footnote-grade
-companion observation paired with MC-7.
+fifteen Step-11 + Phase-1 + V10-V14 + multi-class +
+cross-chain-corpus cycle methodology contributions (§8.7),
+plus a footnote-grade companion observation paired with
+MC-7.
 
 The cipher-agnostic feature subset framework (§7.1) and the
 Step-11 V1+V8 empirical Joint A (§7.2) ship in v1. v2 trigger
