@@ -166,7 +166,7 @@ We make three contributions:
    IA02, IA02b) discovered after the V4 cycle close classified
    into the existing `response_amp` family without taxonomy
    extension. This paper documents the taxonomy-generativity
-   claim and its falsification clause (§4.4); the canonical
+   claim and its falsification clause (§4.5); the canonical
    normative specification routes to the companion format
    paper per §4.
 
@@ -906,7 +906,67 @@ disposition with empirical-measurement provenance is in
 `disclosure/bundles/sui-pending-IA/bundle/FINDINGS.md
 §"Family classification"`.
 
-## §4.4 Falsification clause
+## §4.4 Cross-chain family-abstraction empirical evidence
+
+The taxonomy's chain-agnostic `family_id` decision (§4.2) is
+design-rationale until the family-level abstraction is
+shown to *hold empirically* across chains - i.e., that two
+primitives sharing a `family_id` produce detectable
+family-level wire signatures even when their chain-specific
+implementations differ structurally. `corpus_v1.6` through
+`corpus_v1.10` (2026-05-10 / 2026-05-11) populate Solana
+analogues across 7 of the 10 attack families (10 primitives,
+541 attack bundles); three of those primitive pairs probe
+the abstraction at materially different mechanism-similarity
+distances.
+
+| Pair | Family | Sui primitive | Solana primitive | Mechanism-similarity |
+|---|---|---|---|---|
+| A | `response_amp` | `sui_F10_multi_get_objects_amp` | `SOL_F10_multi_get_accounts_amp` | Same mechanism (multi-key RPC batch read), structurally-similar JSON-RPC endpoints |
+| B | `auth_bypass` | `sui_H01_admin_interface_no_auth` (HTTP GET/POST on REST routes of a separate admin TCP port; 16 known paths) | `SOL_H01_admin_rpc_probe` (JSON-RPC POST on the main RPC port enumerating admin-class method names; 12+ admin methods) | Same family, structurally-different mechanisms |
+| C | `rate_limiter_bypass` | `sui_GR_gasless_rate_fail_open` (programmable transactions with gas-price=0 that the rate-limiter fails-open on) | `SOL_GR01_simulate_compute_flood` (`simulateTransaction` RPC that is gasless by design - the fee market does not apply) | Same family, completely-different mechanisms exploiting the same architectural weakness |
+
+Pair A is the bounded case (similar mechanisms, similar
+endpoints) - V8 binary detector transfers at 100% recall
+cross-chain (Phase A, 2026-05-10). Pairs B and C are the
+mechanism-divergent cases: despite the chain-specific
+mechanisms differing structurally, both produce family-level
+wire signatures consistent with the family's defining
+weakness - high-rate enumeration of admin-class endpoints
+with low success rate (Pair B), high request rate against a
+free / unmetered path with no fee-market backpressure
+(Pair C). Pair B is the strongest case in the chain because
+it is the least mechanically-similar pair - REST-route
+probing vs JSON-RPC method enumeration; if family-level
+signatures survive that much mechanism-diversity, the
+abstraction is real.
+
+The framework's family taxonomy is therefore
+**mechanism-abstraction-class** rather than
+implementation-class: two primitives belong to the same
+family when they exploit the same architectural weakness
+regardless of chain-protocol mechanism. §8.7 MC-19 frames
+the methodology contribution; the load-bearing claim is
+that the schema is empirically anchored rather than
+design-rationale-only.
+
+**Scope at v1 submission**: this evidence is **taxonomy-
+level + mechanism-trace empirical** - the family-level wire
+signatures across the three pairs are consistent with the
+shared architectural weakness, established via per-primitive
+disposition + capture-pipeline traces. **Detector-transfer
+empirical** confirmation across Pairs B and C (V10-trained
+on Sui H01 evaluated against SOL_H01; V11-trained on Sui
+GR evaluated against SOL_GR01 + SOL_P07) is queued forward
+work (~½ day from the existing cross-chain cache);
+deferred outside v1. The MC-18 v3 three-mode transferability
+framework (§8.7) predicts which families' detectors will
+generalise cross-chain in terms of feature-semantic
+composition; this section establishes that the family
+abstraction itself is empirically well-founded as the
+substrate the predictions sit on.
+
+## §4.5 Falsification clause
 
 The taxonomy-generative claim falsifies if a post-cycle
 attack requires **family extension** - defined precisely as
@@ -2087,27 +2147,42 @@ addition tests both the chain-asymmetric mechanism finding's
 generalisation and the per-chain holdout direction's
 empirical reach beyond n=2.
 
-**Cross-chain corpus depth + LOPO + multi-class status
-(2026-05-10).** `corpus_v1.6` landed 141 new Solana attack
-bundles (`s3://nr-chainhunt-xyz/corpus/v1.6/`, 181 MB),
-bringing three Solana primitives above the LOPO floor (≥50
-per primitive): `SOL_F10_multi_get_accounts_amp` 51,
+**Cross-chain corpus depth + LOPO + multi-class +
+family-abstraction status (2026-05-10 / 2026-05-11).**
+`corpus_v1.6` (2026-05-10) landed 141 new Solana attack
+bundles bringing three primitives above the LOPO floor
+(`SOL_F10_multi_get_accounts_amp` 51,
 `SOL_F14_simulate_transaction_sync_wedge` 51,
-`SOL_P07_get_program_accounts_filter_miss` 52. The
-cross-chain LOPO + multi-class evaluations landed the same
-day (Phase A + B; §7.6): V8 cipher-agnostic-v2 transfers
-cross-chain at 100% Solana recall with zero retraining;
-V14/V11 host-telemetry manifests hit 0% Solana recall
+`SOL_P07_get_program_accounts_filter_miss` 52); Phase C.1
+through C.4 (`corpus_v1.7` - `corpus_v1.10`, 2026-05-11)
+added 400 more bundles across four additional families -
+`reconnaissance` (SOL_RC_nmap_slow, 50), `service_misconfig`
+(5 SOL_MC_* primitives, 250), `auth_bypass`
+(SOL_H01_admin_rpc_probe, 50), `rate_limiter_bypass`
+(SOL_GR01_simulate_compute_flood, 50). Solana cross-chain
+corpus now totals 541 attack bundles across 10 primitives
+in 7 of 10 attack families. Cross-chain LOPO + multi-class
+evaluations on the v1.6 primitives landed 2026-05-10 (Phase
+A + B; §7.6): V8 cipher-agnostic-v2 transfers cross-chain
+at 100% Solana recall with zero retraining; V14/V11
+host-telemetry manifests hit 0% Solana recall
 (chain-runtime-specific by design); multi-class softmax
 with joint Sui+Solana training (folded mode) recovers
 V14/V11 to 100%/100% on Solana while preserving V8's
-100%/100%. The n=2 Sui ↔ Solana evidence base thus
+100%/100%. Family-taxonomy mechanism-abstraction-class
+empirically anchored across three primitive pairs (§4.4
+Pair A/B/C). The n=2 Sui ↔ Solana evidence base thus
 graduates from "taxonomy-mapping evidence" to "binary +
-multi-class numbers landed" at LOPO-floor corpus depth -
-load-bearing for the §cross-chain headline of v1's
-methodology pillar. Cross-chain extension beyond Sui ↔
-Solana, and zero-shot Sui→Solana multi-class, remain forward
-work; §7.6 carries the honest-scope caveats.
+multi-class numbers landed at LOPO-floor corpus depth across
+7 of 10 families, with family-abstraction empirically
+anchored" - load-bearing for the §cross-chain headline of
+v1's methodology pillar. Cross-chain extension beyond Sui
+↔ Solana, detector-transfer empirical confirmation of MC-19
+Pairs B and C (V10/V11 trained on Sui evaluated against
+SOL_H01/SOL_GR01), C.5 (`consensus_abuse`, requires
+multi-validator Solana cluster), and zero-shot Sui→Solana
+multi-class characterisation, remain forward work; §4.4 /
+§7.6 / §8.7 MC-19 carry the honest-scope caveats.
 
 **Cipher-suite sensitivity not measured in v1.** Step-11
 Component 1 (closed 2026-05-04; §7.2) measured cipher-agnostic
@@ -2469,17 +2544,25 @@ Solana recall) alongside host-telemetry chain-specificity
 (V14/V11 0% Solana recall); Phase B (multi-class softmax
 with joint Sui+Solana training) recovered V14/V11 to
 100%/100% on Solana while preserving V8's 100%/100%, with
-99.95% OOF and Brier ≤ 0.0008. Together the cycles surfaced
-eighteen substrate-paper-grade methodology contributions
-per principle 4 (plus a footnote-grade companion
-observation paired with MC-7). The contributions
-are cycle-specific learnings about pre-registration
-discipline, manifest-family structure, cross-chain
-feature-quality criteria, production-extractor
+99.95% OOF and Brier ≤ 0.0008. A 2026-05-11 follow-on (Phase
+C.1-C.4) expanded the Solana cross-chain corpus across four
+additional attack families (reconnaissance,
+service_misconfig, auth_bypass, rate_limiter_bypass; corpus
+v1.7-v1.10), bringing Solana coverage to 541 attack bundles
+across 10 primitives in 7 of 10 attack families and
+empirically anchoring the family-taxonomy abstraction across
+three mechanism-similarity-distinct cross-chain pairs (§4.4).
+Together the cycles surfaced nineteen substrate-paper-grade
+methodology contributions per principle 4 (plus a
+footnote-grade companion observation paired with MC-7). The
+contributions are cycle-specific learnings about
+pre-registration discipline, manifest-family structure,
+cross-chain feature-quality criteria, production-extractor
 fidelity-envelope bounds, close-gate compositional coverage,
 joint-conditions architecture, layered-detection
-generalisation, binary-vs-rest cross-fire, and multi-class
-softmax architecture; each generalises beyond this project.
+generalisation, binary-vs-rest cross-fire, multi-class
+softmax architecture, and family-taxonomy mechanism-
+abstraction; each generalises beyond this project.
 
 **MC-1: Reading-1 misspecification (V1 close).**
 Step-11 V1 design's §C.2 outcome-band rationale was anchored
@@ -3066,7 +3149,63 @@ strongest empirical anchor + a third diagnostic protocol
 for the framework's transferability-characterisation
 surface.
 
-**Transferability**: the eighteen contributions generalise
+**MC-19: Family taxonomy abstracts over chain-specific
+implementations (corpus_v1.6-v1.10, 2026-05-10 / 2026-05-11).**
+The framework's chain-agnostic `family_id` decision (D-002;
+§4.2) was design-rationale until the family-level
+abstraction was shown to *hold empirically* across chains.
+`corpus_v1.7` through `corpus_v1.10` populated Solana
+analogues across four additional attack families
+(reconnaissance, service_misconfig, auth_bypass,
+rate_limiter_bypass) at LOPO floor; combined with
+`corpus_v1.6` (response_amp, compute_amp,
+rate_limiter_bypass), Solana cross-chain corpus now totals
+541 attack bundles across 10 primitives in 7 of the 10
+attack families. Three cross-chain primitive pairs probe
+the abstraction at materially different mechanism-similarity
+distances (§4.4): Pair A (`response_amp` / F10, same
+mechanism), Pair B (`auth_bypass` / H01, REST routes vs
+JSON-RPC method enumeration - radically different
+mechanisms), Pair C (`rate_limiter_bypass` / GR,
+programmable-transaction gas-price-0 vs
+`simulateTransaction` gasless-by-design - completely
+different mechanisms exploiting the same architectural
+weakness). Pair A is the bounded case (V8 binary transfers
+at 100% recall cross-chain, Phase A); Pairs B and C are the
+mechanism-divergent cases where the family-level wire
+signatures remain consistent with the shared architectural
+weakness despite mechanism-structural divergence. Pair B is
+the strongest case in the chain because it is the least
+mechanically-similar pair. The framework's family taxonomy
+is therefore **mechanism-abstraction-class** rather than
+implementation-class: two primitives belong to the same
+family when they exploit the same architectural weakness
+regardless of chain-protocol mechanism. Generalisable form:
+attack-family schemas in cross-chain ML detection should be
+anchored on mechanism-abstraction-class (architectural-
+weakness equivalence) rather than implementation-similarity
+(protocol-mechanism similarity) - the former generalises
+cross-chain by design, the latter by accident. Pairs cleanly
+with MC-17a/17b/MC-18 v3: MC-17a/17b/MC-18 v3 characterise
+*detector-level* cross-chain transferability per-class via
+the three-mode taxonomy; MC-19 establishes that the
+family-level *taxonomy substrate* on which the detector
+predictions sit is itself empirically well-founded.
+**Scope caveat**: MC-19 is currently taxonomy-level +
+mechanism-trace empirical (per-primitive disposition + wire-
+signature traces); detector-transfer empirical confirmation
+across Pairs B and C (V10-trained on Sui H01 evaluated
+against SOL_H01; V11-trained on Sui GR evaluated against
+SOL_GR01 + SOL_P07) is queued forward work outside v1.
+Single chain pair tested (Sui ↔ Solana); cross-chain
+abstraction across ≥3 chains banked. C.5 (consensus_abuse,
+multi-validator Solana cluster) not yet captured, so the
+full 10-family schema has cross-chain corpus coverage for 7
+of 10 families. Substrate-paper material under principle 4:
+§family-taxonomy section's empirical anchor + the framework
+generalises argument's strongest claim for non-Sui chains.
+
+**Transferability**: the nineteen contributions generalise
 beyond this project's cipher-agnostic-manifest evaluation.
 MC-1 and MC-5 apply to any pre-registration that anchors
 thresholds on baseline-behaviour assumptions or prior-cycle
@@ -3142,14 +3281,22 @@ pattern as MC-14's resolution of cross-class cross-fire
 Ablation-as-diagnostic generalises beyond cross-chain
 transfer to any cross-domain ML compose where transfer
 necessity diverges from intra-distribution feature
-contribution. We document
+contribution. MC-19 applies to any cross-chain ML detection
+framework with an attack-family taxonomy - the abstraction
+holds empirically when families are anchored on
+architectural-weakness equivalence rather than protocol-
+mechanism similarity, and the three-pair mechanism-
+similarity spectrum (same / structurally-different /
+completely-different mechanisms within one family) is the
+diagnostic for whether a candidate taxonomy is
+mechanism-abstraction-class or implementation-class. We document
 each contribution as cycle-specific evidence; reviewers may
 find the incident-driven contribution pattern useful as
 documented case studies parallel to §8.6's agent-discipline
 contributions. The MC-10 "footnote-grade" designation
 indicates a corpus-design observation worth preserving but
 not load-bearing for any current substrate-paper claim;
-unlike MC-1 through MC-9 and MC-11 through MC-18, it does
+unlike MC-1 through MC-9 and MC-11 through MC-19, it does
 not generate a pre-registration discipline of its own.
 
 
@@ -3198,10 +3345,11 @@ methodology-as-finding thesis canonically - the empirical
 substantiation runs across the V1 → V7-narrow Step-8
 leak-surface arc plus the Step-11 V1+V8 cipher-agnostic
 retrain cycle, with eight closed leak surfaces (§8.5) plus
-eighteen Step-11 + Phase-1 + V10-V14 + multi-class +
+nineteen Step-11 + Phase-1 + V10-V14 + multi-class +
 cross-chain-corpus + cross-chain-LOPO + joint-training
-multi-class cycle methodology contributions (§8.7), plus
-a footnote-grade companion observation paired with MC-7.
+multi-class + family-taxonomy-abstraction cycle
+methodology contributions (§8.7), plus a footnote-grade
+companion observation paired with MC-7.
 
 The cipher-agnostic feature subset framework (§7.1) and the
 Step-11 V1+V8 empirical Joint A (§7.2) ship in v1. v2 trigger
@@ -3219,7 +3367,7 @@ public before the numbers exist.
 
 The paper's three contributions each carry concrete
 falsification clauses, stated at §1 ¶5 and substantiated in
-§3.5 (format), §4.4 (taxonomy), and §5.5 (methodology). To
+§3.5 (format), §4.5 (taxonomy), and §5.5 (methodology). To
 date none of those falsification conditions has been
 triggered; we document the methodology against the
 conditions, not against asserted properties.
