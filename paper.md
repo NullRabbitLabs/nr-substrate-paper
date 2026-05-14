@@ -492,23 +492,24 @@ output, not the contribution itself.
 
 # §3 Bundle v1 - open multi-modal capture format
 
-> *Framing note (updated 2026-05-06): this section is the
+> *Framing note (updated 2026-05-14): this section is the
 > definitive treatment of Bundle v1 in this paper. The canonical
 > normative specification - JSON Schema, pyarrow schemas, reference
 > parsers in Python and Rust, and five reference example bundles -
-> ships as `nr-bundle-spec` v0.1.0 (landed at
-> [github.com/NullRabbitLabs/nr-bundle-spec][nrbundle], MIT-
-> licensed; private repo until 2026-06-05 pending coordinated-
-> disclosure window closure on Sui F10/F14 + Solana F10, public
-> after). This paper covers both the format's design + extension
-> history (here in §3) AND the empirical evidence that motivates
-> the format-stability claim (across §3.3, §3.5, and §A); a
-> separate "format paper" was originally planned but is now merged
-> into this paper rather than published independently.
+> ships as `nr-bundle-spec` v0.1.0 publicly at
+> [github.com/NullRabbitLabs/nr-bundle-spec][nrbundle] (MIT-
+> licensed; published 2026-05-13). The companion public dataset
+> `nr-bundles-public` is live at
+> [huggingface.co/datasets/NullRabbit/nr-bundles-public][nrhf-data]
+> (CC-BY-4.0). This paper covers both the format's design +
+> extension history (here in §3) AND the empirical evidence that
+> motivates the format-stability claim (across §3.3, §3.5, and
+> §A); a separate "format paper" was originally planned but is now
+> merged into this paper rather than published independently.
 >
 > Readers wanting the machine-readable schema, parsers, and example
-> bundles should consult [nr-bundle-spec][nrbundle] (private until
-> 2026-06-05). Readers wanting the rationale for each schema
+> bundles should consult [nr-bundle-spec][nrbundle]. Readers
+> wanting the rationale for each schema
 > decision, the methodology that makes the format additively-
 > extensible by design, and the empirical evidence that three
 > landed schema extensions did so without breaking changes - with a
@@ -516,6 +517,7 @@ output, not the contribution itself.
 > deliberation as the next test case - are in the right place.
 >
 > [nrbundle]: https://github.com/NullRabbitLabs/nr-bundle-spec
+> [nrhf-data]: https://huggingface.co/datasets/NullRabbit/nr-bundles-public
 
 The format pillar of this paper is **Bundle v1**: a multi-
 modal parquet-plus-manifest capture format for adversarial-ML
@@ -711,32 +713,43 @@ test-case for the claim's forward applicability.
 ## §3.4 Companion artefacts
 
 The format publication strategy (D-012) decomposes this
-paper's contribution into three artefacts:
+paper's contribution into five live external artefacts plus
+this preprint (status as of 2026-05-13):
 
-- **`nr-bundle-spec` v0.1.0** [bundle_spec_v0_1_0] - landed
+- **`nr-bundle-spec` v0.1.0** [bundle_spec_v0_1_0] - live
   at [github.com/NullRabbitLabs/nr-bundle-spec][nrbundle]
-  under MIT license (private repo until 2026-06-05 pending
-  coordinated-disclosure window closure on Sui F10/F14 +
-  Solana F10, public after). JSON Schema + Pydantic reference
-  + Python and Rust parsers + 5 example bundles + CI for
+  under MIT license. JSON Schema + Pydantic reference +
+  Python and Rust parsers + 5 example bundles + CI for
   schema regen and cross-language consistency. The spec is a
   separate repo from any corpus; a researcher can adopt the
   format on their own data.
-- **`nr-bundles-public`** - the planned HuggingFace dataset
-  of 20-50 carefully chosen bundles spanning multiple
-  primitives and at least two chains (Sui + Solana).
-  Publication is gated on Step 12 per the publication
-  strategy (D-012); corpus curation (which 20-50 bundles
-  publish?) and target-authorisation filtering are
-  load-bearing pre-publication work. The public sample is
-  designed to demonstrate the format's utility on real
-  bundles; the full corpus remains the moat-via-data
-  differentiator.
-- **This paper** - the `arXiv` preprint. Documents the
+- **`nr-bundles-public`** dataset - live at
+  [huggingface.co/datasets/NullRabbit/nr-bundles-public][nrhf-data]
+  under CC-BY-4.0. 31 curated bundles spanning multiple
+  primitives across Sui + Solana, designed to demonstrate
+  the format's utility on real bundles; the full corpus
+  remains the moat-via-data differentiator.
+- **`v8-cipher-agnostic`** binary detector model - live at
+  [huggingface.co/NullRabbit/v8-cipher-agnostic][nrhf-v8]
+  under Apache-2.0 (reference detector for the
+  cipher-agnostic-v2 7-feature manifest).
+- **`multiclass-folded`** unified detector model - live at
+  [huggingface.co/NullRabbit/multiclass-folded][nrhf-mc]
+  under Apache-2.0 (8-class softmax in the 2026-05-11
+  baseline, 9-class in v2 with V16 absorbed; see §8.7 MC-22).
+- **`nr-bundle-classifier`** interactive Space - live at
+  [huggingface.co/spaces/NullRabbit/nr-bundle-classifier][nrhf-space]
+  under Apache-2.0; loads both models for inline scoring of
+  user-supplied bundles.
+- **This paper** - the working preprint. Documents the
   methodology, the format, the family taxonomy, and the
   V7-narrow technical centerpiece.
 
 [nrbundle]: https://github.com/NullRabbitLabs/nr-bundle-spec
+[nrhf-data]: https://huggingface.co/datasets/NullRabbit/nr-bundles-public
+[nrhf-v8]: https://huggingface.co/NullRabbit/v8-cipher-agnostic
+[nrhf-mc]: https://huggingface.co/NullRabbit/multiclass-folded
+[nrhf-space]: https://huggingface.co/spaces/NullRabbit/nr-bundle-classifier
 
 Adoption beyond NullRabbit's corpus is the long-term play.
 If researchers cite Bundle v1 on their own data, the format
@@ -768,15 +781,14 @@ record, not against an asserted property.
 
 # §4 Chain-agnostic family taxonomy
 
-> *Framing note (updated 2026-05-06): the canonical normative
+> *Framing note (updated 2026-05-14): the canonical normative
 > specification of the family taxonomy - full controlled
 > vocabulary with one-line definitions, primitive-class
 > mappings, and adoption rationale - ships with `nr-bundle-spec`
-> v0.1.0 (landed at
-> [github.com/NullRabbitLabs/nr-bundle-spec][nrbundle], MIT-
-> licensed; private repo until 2026-06-05 pending coordinated-
-> disclosure window closure on Sui F10/F14 + Solana F10, public
-> after; see `python/bundle_spec/taxonomy.py` and the embedded
+> v0.1.0 publicly at
+> [github.com/NullRabbitLabs/nr-bundle-spec][nrbundle] (MIT-
+> licensed; published 2026-05-13; see
+> `python/bundle_spec/taxonomy.py` and the embedded
 > `family_definitions()` table in the Rust crate). Readers wanting
 > the machine-readable reference should consult that repo;
 > readers wanting evidence that the taxonomy classifies post-cycle
@@ -2256,27 +2268,36 @@ demonstrates the same close-gate framework + observation
 substrate generalising to a different attack class without
 architectural change. A 2026-05-09 cycle extends the binary
 detector inventory to V8-V14 covering the full lab corpus
-attack-primitive set (§7.6); V10-V14 are trained against
-the offline corpus but **deployment-blocked on IBSR
-feature-surface extension** - their manifests reference
-`host.cpu_*` / `host.rss_*` / `host.io_write_delta` (V11 /
-V12 / V14) and `resp.duration_ns_*` /
-`resp.status_4xx_frac` / `resp.rpc_error_*` /
-`resp.req_bytes_mean` / `resp.resp_bytes_mean` (V10 / V13)
-which IBSR does not currently emit. The IBSR-side workstream
-(~6-8 days, two phases) is queued; this is operationally
-significant but does not affect the paper's methodology
-claims, which run on the offline corpus the framework is
-proved against. The IBSR shadow-mode architecture
-(deployment against own validator infrastructure first; not
-customer infrastructure yet) and the online inference
-latency budget remain queued as production-architecture
-scoping work (engineering plan document, not deployment
-work). Production engineering execution beyond the
-extractor begins post-paper-preprint; the scoping document
-drafts after the v1 outline lands and uses the
-cipher-agnostic feature surface as the production-required
-feature set per this paper's claims.
+attack-primitive set (§7.6). The IBSR feature-surface
+extension (Phase A schema v7 ResponseAggregates +
+Phase B HostTelemetry blocks, nr-ibsr commits `a1ed02e` +
+`26a5238`) landed 2026-05-11, lifting per-snapshot feature
+extraction from 7 to 26 features and unblocking V10-V14
+production deployment end-to-end (§8.7 MC-20). The demo
+inference container now bundles the multi-class folded
+model with an operator-flippable `--multiclass-primary` env
+flag; idle-traffic smoke-test 2026-05-11 produced the
+expected benign classification with the full feature surface
+populated (vs the prior partial-surface failure mode that
+routed idle traffic to V13 via class-prior collapse). The
+IBSR shadow-mode architecture (deployment against own
+validator infrastructure first; not customer infrastructure
+yet) and the online inference latency budget remain queued
+as production-architecture scoping work. The 2026-05-14 V1
+mixed-traffic verification cycle (§8.7 MC-22 / MC-23 /
+MC-24) characterises the deployment-fidelity gap under
+realistic noisy-server conditions: binary attack-or-benign
+verdicts hold under dilution; per-class identity drifts
+toward a V11-class "garbage attractor" under OOD mixed-
+traffic inputs. The recommended deployment policy is
+therefore *trust the binary verdict, treat per-class
+identity as advisory under mixed traffic* until Path 2
+(mixed-traffic-positive retrain) or Path 3 (per-source-IP
+IBSR aggregation) lands. Production engineering execution
+beyond the extractor begins post-paper-preprint; the
+scoping document drafts after the v1 outline lands and
+uses the cipher-agnostic feature surface as the
+production-required feature set per this paper's claims.
 
 ## §8.4 Reproducibility
 
@@ -2284,12 +2305,17 @@ Full reproducibility is committed at three levels:
 
 - **Format spec at `nr-bundle-spec` v0.1.0**
   ([github.com/NullRabbitLabs/nr-bundle-spec][nrbundle],
-  MIT-licensed; v0.1.0 tagged 2026-05-06; access state per
-  §3.4 framing note; D-012 publication strategy). JSON Schema + pyarrow schemas + reference parsers
-  in Python and Rust + five reference example bundles.
-  Cross-language guarantees pinned by tests: byte-equivalent
-  wire enum strings, byte-equivalent `compute_genome_id`
-  output, and identical Arrow schemas across both languages.
+  MIT-licensed; published 2026-05-13; D-012 publication
+  strategy). JSON Schema + pyarrow schemas + reference
+  parsers in Python and Rust + five reference example
+  bundles. Cross-language guarantees pinned by tests:
+  byte-equivalent wire enum strings, byte-equivalent
+  `compute_genome_id` output, and identical Arrow schemas
+  across both languages. Companion public artefacts (§3.4):
+  `nr-bundles-public` dataset, `v8-cipher-agnostic` reference
+  detector, `multiclass-folded` unified detector, and
+  `nr-bundle-classifier` interactive Space all live on
+  HuggingFace as of 2026-05-13.
 
 [nrbundle]: https://github.com/NullRabbitLabs/nr-bundle-spec
 - **Sample bundles at HuggingFace `nr-bundles-public`**
@@ -2552,17 +2578,44 @@ v1.7-v1.10), bringing Solana coverage to 541 attack bundles
 across 10 primitives in 7 of 10 attack families and
 empirically anchoring the family-taxonomy abstraction across
 three mechanism-similarity-distinct cross-chain pairs (§4.4).
-Together the cycles surfaced nineteen substrate-paper-grade
-methodology contributions per principle 4 (plus a
-footnote-grade companion observation paired with MC-7). The
-contributions are cycle-specific learnings about
-pre-registration discipline, manifest-family structure,
-cross-chain feature-quality criteria, production-extractor
-fidelity-envelope bounds, close-gate compositional coverage,
-joint-conditions architecture, layered-detection
-generalisation, binary-vs-rest cross-fire, multi-class
-softmax architecture, and family-taxonomy mechanism-
-abstraction; each generalises beyond this project.
+A 2026-05-11 / 2026-05-12 cycle landed the IBSR v7
+feature-surface extension and end-to-end production
+deployment (multi-class folded model on live IBSR
+snapshots; §8.3). A 2026-05-12 / 2026-05-13 cycle ran the
+V15 gossip-abuse detector through a worked-example
+iterative-leak-surface-peeling pass (caveat named in
+pre-registration, caveat empirically confirmed when the
+UDP-gossip benign baseline landed, V16 corpus-augmented
+retrain closing the caveat, multi-class folded v2
+additively absorbing V16 as a 9th softmax column) - the
+substrate paper's canonical worked example of the pattern
+at the binary-detector layer. The same day landed the
+public-artefact trio (`nr-bundle-spec` v0.1.0 +
+`nr-bundles-public` dataset + `v8-cipher-agnostic` and
+`multiclass-folded` models + `nr-bundle-classifier`
+interactive Space; §3.4). A 2026-05-14 cycle ran the V1
+mixed-traffic verification under realistic noisy-server
+conditions, surfacing three load-bearing methodology
+findings (bundle-level vs IBSR-level scoring divergence;
+V11-class garbage-attractor under OOD mixed-traffic
+inputs; binary-vs-multi-class deployment-policy
+asymmetry). Together the cycles surfaced twenty-four
+substrate-paper-grade methodology contributions per
+principle 4 (plus a footnote-grade companion observation
+paired with MC-7). The contributions are cycle-specific
+learnings about pre-registration discipline,
+manifest-family structure, cross-chain feature-quality
+criteria, production-extractor fidelity-envelope bounds,
+close-gate compositional coverage, joint-conditions
+architecture, layered-detection generalisation,
+binary-vs-rest cross-fire, multi-class softmax
+architecture, family-taxonomy mechanism-abstraction,
+production-deployment empirical anchoring,
+iterative-leak-surface-peeling at the binary-detector
+layer, bundle-vs-IBSR scoring divergence, multi-class
+garbage-attractor structural properties, and binary-vs-
+multi-class deployment-policy asymmetry; each generalises
+beyond this project.
 
 **MC-1: Reading-1 misspecification (V1 close).**
 Step-11 V1 design's §C.2 outcome-band rationale was anchored
@@ -3205,7 +3258,188 @@ of 10 families. Substrate-paper material under principle 4:
 §family-taxonomy section's empirical anchor + the framework
 generalises argument's strongest claim for non-Sui chains.
 
-**Transferability**: the nineteen contributions generalise
+**MC-20: Production-deployment empirical anchor (IBSR v7,
+2026-05-11 / 2026-05-12).** The IBSR feature-surface
+extension blocker identified at the V10-V14 cycle close
+(§7.6 / §8.3) resolved end-to-end on the production demo
+stack. nr-ibsr schema v7 added `ResponseAggregates`
+(`duration_ns_{mean,max}`, `status_{2xx,4xx,5xx}_frac`,
+`rpc_error_{distinct_codes,frac}`, `req_bytes_mean`,
+`resp_bytes_mean`) via Phase A (`a1ed02e`) and
+`HostTelemetry` (`cpu_{mean,max}`, `rss_{delta,max,slope_bps}`,
+`num_fds_delta`, `num_connections_{delta,max}`,
+`io_write_delta`) via Phase B (`26a5238`); the inference
+container's `features_from_ibsr_snapshot()` lifted from 7 to
+26 features per snapshot. End-to-end smoke-test (idle
+traffic, 2026-05-11): live IBSR capture → inference
+container loads V8 binary + multi-class folded model →
+predictions JSONL with per-class probabilities → nr-guard
+XDP enforcement consumes JSONL and applies block / redirect
+/ pass per verdict. The "V8 NaN-prediction artefact"
+characterised at the V10-V14 cycle as a class-prior
+collapse under partial feature surface (multi-class argmax
+= V13, wrong) materially resolves under the full v7
+surface (argmax = benign, correct; `host.cpu_mean` =
+13.2%, `host.rss_delta` = +5.9 MB, `resp.count` = 4,
+`resp.duration_ns_mean` = 221,528 ns). The framework's
+production-deployment claim is no longer "trained models
+can exist offline" - it is "trained models run on live
+validator traffic with the production extractor at
+full-feature-surface parity to the offline-trainer."
+Three-step proof: (1) IBSR-side numerical-equivalence to
+offline extractor on Phase 1 close-gate features (MC-8,
+2026-05-06); (2) IBSR-side schema parity for V10-V14
+manifest features (MC-20 Phase A + B landing, 2026-05-11);
+(3) production inference container running multi-class
+folded model on live IBSR output, predicting idle as
+benign + attacks as their class (this evidence,
+2026-05-11/12). Substrate-paper material under principle
+4: §production-deployment section's empirical anchor;
+expands the framework's value proposition from "schema +
+trainer" to "schema + trainer + production extractor +
+production inference, all at feature-surface parity".
+
+**MC-21: Iterative leak-surface peeling at the
+binary-detector layer (V15 → V16 worked example,
+2026-05-12 / 2026-05-13).** This paper's canonical
+"iterative leak-surface peeling" pattern (§5 methodology
+centerpiece) extends to the binary-detector layer with
+the V15 → V16 cycle pair. V15 (gossip-abuse binary detector,
+trained 2026-05-12 on 10 cycle2 bundles vs 200 TCP RPC
+benigns) cleared per-primitive recall at A-grade per
+pre-registered triggers but carried an explicit Section H
+caveat: *"the model may trivially learn `UDP at port 9001`
+as the discriminator - which fires correctly on the attack
+mechanism but is a protocol-shape signal, not the
+attack-shape signal we want."* The substrate framework's
+pre-registration discipline is doing the load-bearing work
+here: the caveat names the falsifiable risk in advance.
+2026-05-13 early, the first ground-truth UDP gossip benign
+(`SOL_BG01_validator_repair_catchup`, real
+validator-to-validator repair traffic from a two-validator
+lab cluster) landed; scoring V15 against the expanded
+corpus produced **35/35 gossip-abuse attacks fired at
+1.000 AND SOL_BG01 also fired at 1.000**. Caveat #2
+empirically confirmed: V15 learned protocol shape, not
+attack shape; as trained, V15 is NOT production-deployable.
+The same day, V16 (pre-registered Section J of
+`V15-DESIGN-V1.md` with four falsifiable hypotheses) was
+trained with `SOL_BG01` in the negative training set, no
+manifest change, A-grade-caveat-closed outcome: `SOL_BG01`
+in-sample score 1.0000 → **0.0053**; all 35 gossip-abuse
+attacks fire at ≥0.9998; 200 sampled holdout benigns
+0/200 fire (max 0.0004); H1 confirmed; H2 falsified.
+Honest caveats banked: `SOL_BG01` is in-sample at n=1 so
+no LOPO is possible; corpus expansion to n≥10 UDP gossip
+benigns across postures is the next-cycle path. Multi-class
+folded v2 (`MULTICLASS-FOLDED-V2-DESIGN.md`, same day)
+absorbs V16 as a 9th softmax column without disturbing
+existing classes: per-class recall 0.997-1.000 across the
+8 prior classes, V16 recall 1.000 at precision 0.972,
+overall OOF 0.9992 (within fold-variance of the 2026-05-11
+baseline 0.9996); H1 (regression test) confirmed; H2
+(V16 new class fit) confirmed in-sample. The substrate
+paper's iterative-leak-surface-peeling worked example
+extends from the training-cycle layer (V1 → V7-narrow arc,
+§5.4) to the binary-detector layer (V15 → V16) and the
+multi-class-folded layer (folded v2 absorbs V16
+additively). Substrate-paper material under principle 4:
+the pattern is layered, not flat - each cycle's outcome
+surfaces the next layer's gap honestly and the methodology
+discipline produces detectors whose limitations are
+characterised honestly and closed iteratively when corpus
+enables it.
+
+**MC-22: Bundle-level vs IBSR-level scoring divergence
+(V1 mixed-traffic cycle, 2026-05-14).** Structural
+methodology finding load-bearing for this paper's
+§methodology section. Bundle aggregation contracts
+(attacker-filtered `responses.parquet` - the F10 reproducer's
+`record_response()` writes only attacker-originated RPCs)
+are *training-time fidelity*; IBSR window-aggregate
+contracts (BPF/XDP packet-layer wire view; sees all traffic
+on the wire regardless of origin) are *production fidelity*.
+The two views **do not converge under mixed traffic**.
+Empirical evidence: scoring 10 F10 mixed-traffic bundles at
+three dilution ratios (1× / 10× / 100×) via the offline
+bundle-level path produced identical V8 scores (0.9977)
+across all three ratios - the bundle-level view filters
+dilution out of the feature surface by construction. The
+IBSR-snapshot view (production-inference path) showed the
+real dilution gradient: V8 binary mean 0.9977 → 0.9666 →
+0.7993 across 1× / 10× / 100×; V8 binary fired ≥0.5 in
+18/18 snapshots at all three ratios. Generalisable form:
+any deployment claim that quotes bundle-level scoring
+numbers as production-fidelity evidence is a methodology
+error. The bundle-level path is for training and offline
+methodology evaluation; the IBSR window-aggregate path
+is the inference-time analogue. Substrate-paper material
+under principle 4: structural cleavage between training-
+fidelity and production-fidelity evaluation contracts;
+this paper's §methodology section gains the bundle-vs-IBSR
+divergence as a load-bearing distinction.
+
+**MC-23: V11-class garbage-attractor under OOD
+mixed-traffic inputs (V1 cycle, 2026-05-14).** Structural
+decision-boundary property of the multi-class folded
+softmax under out-of-distribution mixed-traffic inputs. At
+the IBSR-view (production-fidelity path), F10 mixed-traffic
+captures at 100× background dilution route to V11
+(rate_limiter_bypass) at 100% argmax instead of V8
+(response_amp), even though the V8 binary detector still
+fires; F14 mixed-traffic captures at 10× and 100× similarly
+route to V11 instead of V14 at 100% argmax. The V11-class
+manifold absorbs OOD mixed-traffic inputs whose features
+are pulled toward the high-`resp.count` + low-`amp_ratio` +
+short-`duration_ns` region by background traffic - a
+coherent structural property of the trained model's
+decision boundary, not random softmax noise. **The
+substrate paper's canonical example of "multi-class
+identity is harder than binary detection" under mixed
+traffic.** Distinct from standard open-set classification
+framings because the garbage class is structurally
+*absorptive*, not residual. Generalisable form: any
+multi-class softmax trained on single-attacker-no-benign-
+concurrent-traffic exemplars develops at least one class
+manifold that absorbs OOD inputs along the
+"mixed-traffic-shifted feature region" axis; the substrate
+paper's V11 manifold is the worked example, not the
+general claim. Substrate-paper material under principle 4:
+§discussion section's load-bearing structural finding;
+remediation paths pre-registered (Path 2: mixed-traffic-
+positive retrain; Path 3: per-source-IP IBSR aggregation).
+
+**MC-24: Binary-vs-multi-class deployment-policy asymmetry
+(V1 cycle, 2026-05-14).** Concrete operational
+recommendation derived from MC-22 + MC-23. Under mixed
+traffic at production-fidelity (IBSR-view): binary
+attack-or-benign verdicts are **dilution-robust** (V8
+binary fired ≥0.5 across all dilution ratios in all
+mixed-traffic Phase 1 + Phase 2 captures); per-class
+identity is **mixed-traffic-fragile** (V11-class
+garbage-attractor at higher dilutions). The
+production-deployment policy that follows: *trust the
+binary verdict; treat per-class identity as advisory under
+mixed traffic*. This is the framework's first explicit
+deployment-policy claim with empirical backing at a
+defined dilution range; remediation paths (Path 2 mixed-
+traffic-positive retrain at multiple dilution ratios; Path
+3 per-source-IP IBSR v8 schema extension scoring the
+attacker's stream in isolation) are pre-registered
+remediation cycles when corpus + infra unblock them.
+Generalisable form: cross-domain ML deployment policy
+under noisy/diluted production inputs should not assume
+binary-detection and multi-class-identification share
+robustness profiles; the paired-class fragility surfaces
+under empirical mixed-traffic verification, and the
+remediation paths are corpus-side (mixed-traffic-positive
+retrain) or extractor-side (per-source-IP aggregation),
+not architectural. Substrate-paper material under
+principle 4: §deployment-policy section's empirical
+anchor + the framework's first concrete
+operator-actionable claim.
+
+**Transferability**: the twenty-four contributions generalise
 beyond this project's cipher-agnostic-manifest evaluation.
 MC-1 and MC-5 apply to any pre-registration that anchors
 thresholds on baseline-behaviour assumptions or prior-cycle
@@ -3289,14 +3523,44 @@ mechanism similarity, and the three-pair mechanism-
 similarity spectrum (same / structurally-different /
 completely-different mechanisms within one family) is the
 diagnostic for whether a candidate taxonomy is
-mechanism-abstraction-class or implementation-class. We document
+mechanism-abstraction-class or implementation-class.
+MC-20 applies to any ML detection framework where
+production-extractor feature-surface parity to the
+offline-trainer extractor is the load-bearing precondition
+for live-deployment claims; the three-step proof
+(numerical-equivalence on subset features →
+schema-parity on full manifest → end-to-end inference on
+live extractor output) is the methodology pattern. MC-21
+applies to any detector cycle where pre-registration
+discipline names a load-bearing falsifiable caveat in
+advance, corpus expansion enables empirical testing of the
+caveat, and corpus-augmented retrain closes the caveat
+iteratively - the paper's iterative-leak-surface-peeling
+pattern extends layered (training-cycle layer → binary-
+detector layer → multi-class absorption layer). MC-22
+applies to any ML deployment compose where the
+training-time evaluation contract (e.g., attacker-filtered
+bundle aggregation) and the production-fidelity evaluation
+contract (e.g., wire-layer extractor aggregation) diverge
+under operational inputs (e.g., mixed traffic); quoting
+training-time numbers as production-fidelity evidence is a
+methodology error. MC-23 applies to any multi-class
+softmax trained without out-of-distribution exemplars in
+its training distribution; expect one class manifold to
+become *structurally absorptive* for OOD inputs along the
+operational-shift axis, not residual. MC-24 applies to any
+ML deployment under noisy / diluted production inputs:
+binary-detection and multi-class-identification do not
+share robustness profiles, and the right deployment policy
+treats them as separable decisions with separable
+trust calibration. We document
 each contribution as cycle-specific evidence; reviewers may
 find the incident-driven contribution pattern useful as
 documented case studies parallel to §8.6's agent-discipline
 contributions. The MC-10 "footnote-grade" designation
 indicates a corpus-design observation worth preserving but
 not load-bearing for any current substrate-paper claim;
-unlike MC-1 through MC-9 and MC-11 through MC-19, it does
+unlike MC-1 through MC-9 and MC-11 through MC-24, it does
 not generate a pre-registration discipline of its own.
 
 
@@ -3345,11 +3609,13 @@ methodology-as-finding thesis canonically - the empirical
 substantiation runs across the V1 → V7-narrow Step-8
 leak-surface arc plus the Step-11 V1+V8 cipher-agnostic
 retrain cycle, with eight closed leak surfaces (§8.5) plus
-nineteen Step-11 + Phase-1 + V10-V14 + multi-class +
+twenty-four Step-11 + Phase-1 + V10-V14 + multi-class +
 cross-chain-corpus + cross-chain-LOPO + joint-training
-multi-class + family-taxonomy-abstraction cycle
-methodology contributions (§8.7), plus a footnote-grade
-companion observation paired with MC-7.
+multi-class + family-taxonomy-abstraction +
+production-deployment-anchor + V15→V16-worked-example +
+mixed-traffic-verification cycle methodology contributions
+(§8.7), plus a footnote-grade companion observation paired
+with MC-7.
 
 The cipher-agnostic feature subset framework (§7.1) and the
 Step-11 V1+V8 empirical Joint A (§7.2) ship in v1. v2 trigger
@@ -3374,7 +3640,7 @@ conditions, not against asserted properties.
 
 Open call: adopt `nr-bundle-spec` v0.1.0
 ([github.com/NullRabbitLabs/nr-bundle-spec][nrbundle],
-MIT-licensed; access state per §3.4) on your own data;
+MIT-licensed; published 2026-05-13) on your own data;
 report when leak-surface peeling surfaces something new. The methodology-as-finding
 framing means a field-tested instance - the discipline
 working on a different chain's validator infrastructure,
