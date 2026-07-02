@@ -61,10 +61,35 @@ chains in both LOPO regimes (Step-11 V1 retrain), and
 V7-narrow §SE3-affected `pcap.mean_packet_size`
 distribution-mismatch source is removed from the manifest.
 The encryption boundary itself does not introduce additional
-accuracy degradation. The methodology contributions persist
-independently of any single evaluation-gate outcome; the v2
-trigger becomes V9-or-later cycles along orthogonal axes
-(cipher-suite variation, mTLS, additional chains).
+accuracy degradation.
+
+The methodology contributions persist independently of any
+single evaluation-gate outcome. Since v1 the corpus has grown
+along the additional-chains axis v1 pre-registered as a v2
+trigger: from the two-chain Sui+Solana base to a **nine-chain,
+~40-primitive public-CVE known-class corpus** (Bitcoin,
+Ethereum, Solana, Sui, Cosmos, Monero, Dogecoin, Litecoin,
+libp2p) in which every attack faithfully reproduces a specific
+public disclosure - a CVE, a GHSA, or a named third-party
+audit - recorded in `provenance.public_source`. A per-bundle
+`provenance.source_class` field (`public-cve-replication` vs
+`original`, ratified in `nr-bundle-spec` v0.1.3) separates
+these publishable reproductions from our own disclosure-gated
+measurement, and an automated, guarded pipeline (daily CVE
+triage → node-crash-gated attack forge → nightly retrain →
+publish-guard → self-updating model card) reproduces the
+corpus end-to-end. The scale-up sharpens the cross-chain
+result rather than softening it: a binary attack-vs-benign
+detector separates attack-*use* from benign-*use* of the same
+wire messages at ~0.90 within-chain held-out ROC (GroupKFold
+by primitive; diagnostic, not a deployment claim), while
+**cross-chain family recovery stays near the floor** -
+held-out-chain seven-class macro-F1 of 0.17 (Sui) / 0.35
+(Solana) against a ~0.14 random-label floor. The two-chain
+V7-narrow non-transfer finding thus generalises to nine
+chains: the mechanism-class signal is real and within-chain;
+whole-taxonomy cross-chain transfer remains an open problem we
+state as one, not a result.
 
 
 # §1 Introduction
@@ -121,7 +146,11 @@ between attack and synthetic-client benign pipelines). The
 methodology carried this through six subsequent iterations
 on a 2,103-bundle Sui + Solana corpus (decomposition in
 Appendix A.0), surfacing and closing eight distinct leak
-surfaces in sequence; full inventory in §5.4 + §8.5.
+surfaces in sequence; full inventory in §5.4 + §8.5. The two
+months since v1 extended the same discipline to a nine-chain,
+~40-primitive **public-CVE known-class corpus** and an
+automated, guarded training pipeline; §4.6 and §5.6 integrate
+those results, including where they update v1's claims.
 
 We make three contributions:
 
@@ -165,8 +194,10 @@ We make three contributions:
    post-cycle discovery: three Sui validator attacks (IA01,
    IA02, IA02b) discovered after the V4 cycle close classified
    into the existing `response_amp` family without taxonomy
-   extension. This paper documents the taxonomy-generativity
-   claim and its falsification clause (§4.5); the canonical
+   extension (§4.3), and, at nine-chain scale, dozens of
+   public-CVE primitives classify into existing families
+   (§4.6). This paper documents the taxonomy-generativity claim
+   and its falsification clause (§4.5); the canonical
    normative specification routes to the companion format
    paper per §4.
 
@@ -194,9 +225,15 @@ What would falsify each contribution:
   additive resolution available.
 - **Taxonomy** falsifies if a post-cycle attack requires family
   extension, where "family extension" means adding a new family
-  member rather than classifying into an existing one. To
-  date, three post-cycle attacks have produced zero taxonomy
-  modifications.
+  member rather than classifying into an existing one. At v1
+  submission, three post-cycle attacks (IA01/IA02/IA02b) had
+  produced zero taxonomy modifications. The nine-chain scale-up
+  since updates this record honestly (§4.5, §4.6): dozens of
+  cross-chain public-CVE primitives classified into existing
+  families without extension, while one new network family
+  (`rpc_handler_cpu`) and a separate six-family economic-attack
+  layer (D-035) were added - documented family-extension
+  events, forward-tracked under this clause rather than elided.
 
 These falsification conditions are forward-tracking
 commitments, not resolved questions. This paper documents
@@ -492,33 +529,6 @@ output, not the contribution itself.
 
 # §3 Bundle v1 - open multi-modal capture format
 
-> *Framing note (updated 2026-05-14): this section is the
-> definitive treatment of Bundle v1 in this paper. The canonical
-> normative specification - JSON Schema, pyarrow schemas, reference
-> parsers in Python and Rust, and five reference example bundles -
-> ships as `nr-bundle-spec` v0.1.0 publicly at
-> [github.com/NullRabbitLabs/nr-bundle-spec][nrbundle] (MIT-
-> licensed; published 2026-05-13). The companion public dataset
-> `nr-bundles-public` is live at
-> [huggingface.co/datasets/NullRabbit/nr-bundles-public][nrhf-data]
-> (CC-BY-4.0). This paper covers both the format's design +
-> extension history (here in §3) AND the empirical evidence that
-> motivates the format-stability claim (across §3.3, §3.5, and
-> §A); a separate "format paper" was originally planned but is now
-> merged into this paper rather than published independently.
->
-> Readers wanting the machine-readable schema, parsers, and example
-> bundles should consult [nr-bundle-spec][nrbundle]. Readers
-> wanting the rationale for each schema
-> decision, the methodology that makes the format additively-
-> extensible by design, and the empirical evidence that three
-> landed schema extensions did so without breaking changes - with a
-> fourth schema-design question (D-015) sitting adjacent under
-> deliberation as the next test case - are in the right place.
->
-> [nrbundle]: https://github.com/NullRabbitLabs/nr-bundle-spec
-> [nrhf-data]: https://huggingface.co/datasets/NullRabbit/nr-bundles-public
-
 The format pillar of this paper is **Bundle v1**: a multi-
 modal parquet-plus-manifest capture format for adversarial-ML
 research on validator infrastructure. The publication strategy
@@ -781,23 +791,6 @@ record, not against an asserted property.
 
 # §4 Chain-agnostic family taxonomy
 
-> *Framing note (updated 2026-05-14): the canonical normative
-> specification of the family taxonomy - full controlled
-> vocabulary with one-line definitions, primitive-class
-> mappings, and adoption rationale - ships with `nr-bundle-spec`
-> v0.1.0 publicly at
-> [github.com/NullRabbitLabs/nr-bundle-spec][nrbundle] (MIT-
-> licensed; published 2026-05-13; see
-> `python/bundle_spec/taxonomy.py` and the embedded
-> `family_definitions()` table in the Rust crate). Readers wanting
-> the machine-readable reference should consult that repo;
-> readers wanting evidence that the taxonomy classifies post-cycle
-> attacks without extension - three Sui post-cycle disclosures
-> (IA01/IA02/IA02b) classified into existing `response_amp`
-> family without modification - are in the right place.
->
-> [nrbundle]: https://github.com/NullRabbitLabs/nr-bundle-spec
-
 The taxonomy pillar of this paper is the **family-level
 controlled vocabulary** that makes cross-chain claims
 testable: a model trained on Sui `response_amp` primitives
@@ -916,7 +909,10 @@ on the replacement stack months later fit the existing
 family-level vocabulary without extension. The full
 disposition with empirical-measurement provenance is in
 `disclosure/bundles/sui-pending-IA/bundle/FINDINGS.md
-§"Family classification"`.
+§"Family classification"`. The claim is corroborated far more
+broadly at nine-chain public-CVE scale in §4.6, where dozens of
+external CVE / GHSA / audit primitives classify into the
+existing families.
 
 ## §4.4 Cross-chain family-abstraction empirical evidence
 
@@ -1002,18 +998,119 @@ condition:
    weakens from "generative" to "stretchable but
    coherence-degraded."
 
-To date, three post-cycle attacks (IA01, IA02, IA02b)
-classify cleanly into `response_amp` without competing
-candidate families and without coherence stress. The
-falsification record is empirical and forward-trackable:
-this paper is honest under this clause if subsequent cycles
-produce an attack requiring family extension, and that
-finding itself becomes substrate-paper material in a
-subsequent revision. The forward-track location is
-`disclosure/bundles/<future-finding>/FINDINGS.md
-§"Family classification"` per the IA01/IA02/IA02b template;
-revisions of this paper reflect the cumulative record per
-principle 4 (methodology contributions are first-class).
+At v1 submission, three post-cycle Sui attacks (IA01/IA02/IA02b)
+classified cleanly into `response_amp` without competing
+candidate families and without coherence stress (§4.3). The
+falsification record is empirical and forward-trackable, and
+the nine-chain scale-up (§4.6) has since exercised it at much
+larger scale, returning a split verdict recorded here rather
+than elided. Classification-without-extension is the common
+case: dozens of public-CVE primitives across Bitcoin, Ethereum,
+Cosmos, Monero, libp2p, Dogecoin, and Litecoin folded into the
+existing families without competing candidates - strong
+generativity evidence well beyond the three-Sui base. But the
+clause also fired twice: the Sui Move-VM disassemble-panic
+primitive took a **new** network family, `rpc_handler_cpu` (an
+RPC handler driven to a crash / CPU-halt state by a malformed
+request - a mechanism class distinct from amplification and
+exhaustion), and a separate **six-family economic / DeFi attack
+layer** (`oracle_manipulation`, `liquidation_abuse`,
+`amm_value_extraction`, `governance_capture`,
+`protocol_logic_exploit`, `bridge_message_abuse`; D-035,
+schema-additive at BUNDLE_VERSION 2 → 3) extended the vocabulary
+into a new attack domain. Neither is the "weak",
+coherence-degraded stretch the clause warns about - both are
+clean new mechanism classes - but under the clause as written
+each is a family-extension event. The honest verdict is
+therefore that the generativity claim holds as a strong
+tendency, not as an absolute: the taxonomy generalises broadly
+across chains without extension, and extends cleanly
+(additively, not by stretching an existing family) when a
+genuinely new mechanism class arrives. Revisions reflect the
+cumulative record per principle 4 (methodology contributions
+are first-class).
+
+
+## §4.6 Post-v1 scale-up: the nine-chain public-CVE known-class corpus
+
+v1's two-chain corpus was calibrated to the "additional chains"
+v2 trigger (§8.2). That axis has since been exercised directly.
+The **public-CVE known-class corpus** spans nine chains -
+Bitcoin, Ethereum, Solana, Sui, Cosmos, Monero, Dogecoin,
+Litecoin, and libp2p (the shared gossipsub infrastructure
+layer, where one model reaches many host chains) - with 40
+attack primitives over 46 chain×primitive instances, 1,262
+bundles (850 attack / 412 benign). The organising discipline is
+provenance, not scale: **every attack primitive faithfully
+reproduces a specific external public disclosure** - a CVE, a
+GHSA, or a named third-party audit - and carries that
+disclosure's URL in `provenance.public_source`. Sourcing
+strength is uneven and stated as such: Bitcoin is strongest
+(~18 real Bitcoin Core P2P CVEs, several inherited on the
+shared wire by Dogecoin and Litecoin), then GHSAs (Cosmos SDK,
+libp2p / gossipsub) and named audits (Neodyme's Firedancer
+reports for the Solana TPU-QUIC primitives, CertiK's Skyfall
+write-ups for the Sui Move-VM primitives). The weakest-sourced
+RPC-amplification primitives, for which no CVE exists, are our
+own `original` measurement and are **excluded** from the
+published cut (§5.6).
+
+The negative class is load-bearing and inherits the V1 → V2
+co-linearity lesson (§5.4) at nine-chain scale: benign traffic
+**exercises the same methods and wire messages the attacks
+abuse**, at normal rate and volume. The detector must therefore
+separate attack-*use* from benign-*use* of a message type, not
+merely "large request" or "high rate". A single multi-family
+`HistGradientBoostingClassifier` with isotonic calibration runs
+over the `network-v1` feature manifold (pcap aggregates + RPC
+response aggregates; NaN-native, degenerate columns dropped by
+a per-fit robust-column guard, D-050); inference is
+scoreability-gated, so a record with no network signal returns
+no verdict rather than a false one.
+
+Three evaluation results, named separately so the binary signal
+is not read as more than it is:
+
+- **Within-chain binary attack-vs-benign** (GroupKFold held out
+  by primitive): ROC **0.8985**. This is the detector's usable
+  signal - and it is diagnostic, on synthetic lab traffic, not
+  a deployment number.
+- **Zero-shot leave-one-chain-out binary** (train the other
+  eight chains, test the held-out one): **0.63-1.00** - Cosmos
+  and Litecoin 1.00, Ethereum 0.97, Bitcoin 0.91, down to
+  Solana 0.64 and Monero 0.63. A HARD transfer probe, not a
+  deployment metric; chains with few public-CVE primitives
+  (Monero's unique Levin/epee protocol, Solana's QUIC) have the
+  fewest cross-chain near-neighbours, and the number reflects
+  that honestly.
+- **Cross-chain family recovery** (held-out-chain, seven-class
+  macro-F1): **0.17 (Sui) / 0.35 (Solana), against a ~0.14
+  random-label floor**. Recovering *which* family a held-out
+  chain's attack belongs to, zero-shot, is near chance.
+
+The three answer different questions. The within-chain binary
+signal is real; the cross-chain family-recovery collapse is the
+two-chain V7-narrow non-transfer finding (§6) reproduced at
+nine-chain scale, and is the harder zero-shot regime beyond the
+joint-trained n=2 Sui ↔ Solana multi-class results of §8.2.
+Conflating them - letting the ~0.90 binary ROC stand in for
+cross-chain generalisation - is exactly the overclaim the
+methodology exists to prevent. Mechanism-class detection is a
+within-chain result; whole-taxonomy cross-chain transfer
+remains an open problem.
+
+Two ceilings bound the corpus, stated per principle 2. It is
+**diagnostic, not a deployment claim**: bundles are synthetic
+localnet reproductions at lab fidelity; detection is on traffic
+*shape* (rate, size, connection-churn), not deep wire
+semantics, so it would not separate two attacks with identical
+traffic profiles; and there are no host-load features (the
+containerised lab node is root-owned). A deployment claim needs
+a real-traffic validation gate - real mainnet RPC plus real
+attack instances - the network analogue of the economic
+detector's held-out real-data ladder (D-049). Until that gate
+exists the corpus is a worked, public-provenance reference, not
+a turnkey IDS.
 
 
 # §5 Iterative leak-surface peeling methodology
@@ -1327,6 +1424,92 @@ substrate-paper material at §8.7 MC-1; the Layer-2-instance
 counterpart (§C.3-bis falsification clause anchored on an
 arbitrary threshold rather than the explicit prior-cycle
 measurement) is documented at §8.7 MC-5.
+
+
+## §5.6 Provenance-class publishability discipline + the automated guarded cycle
+
+Two disciplines added since v1 operationalise the same
+pre-registration-and-honest-framing commitments at corpus
+scale, and both are methodology contributions in their own
+right per principle 4.
+
+**Provenance-class discipline (publishable vs disclosure-gated).**
+Security-detection corpora mix two kinds of attack: faithful
+reproductions of someone else's *already-public* disclosure,
+and one's *own* undisclosed findings. Publishing the first is
+safe; publishing the second burns a coordinated-disclosure
+window. We make the distinction a first-class, machine-checked
+bundle property rather than a per-artefact judgement call.
+Every attack bundle carries a `provenance.source_class`:
+`public-cve-replication` (a faithful reproduction of an
+external CVE, GHSA, named third-party audit, or published
+post-mortem, referenced by URL in `provenance.public_source` -
+nothing of ours is revealed, so it is publishable) or
+`original` (our own finding or measurement - disclosure-gated,
+not for publication until it has cleared the disclosure track).
+The decision rule is one line: *if removing the thing from the
+world would remove a NullRabbit secret it is `original`; if it
+only re-states what is already public it is
+`public-cve-replication`.* A per-primitive registry
+(`known_class_provenance.py`) is the authoritative map and a
+stamper writes the field into every manifest and **errors on
+any unclassified attack** - an attack cannot ship unlabelled.
+The field is ratified in `nr-bundle-spec` v0.1.3 as an additive
+optional field (no `BUNDLE_VERSION` change). The **published
+cut is `public-cve-replication`-only**: the `original`
+RPC-amplification primitives are dropped from *training*, not
+merely from the tables, so the model card's claim to be
+"trained entirely on reproductions of publicly-disclosed
+issues" is literally true.
+
+**The automated, guarded cycle (reproducibility as code).**
+The corpus is no longer hand-tended; it is produced by a
+pipeline in which each discipline above is enforced by a
+program, not per-session diligence. (1) *Research* - a daily
+CVE feed pulls public disclosures from OSV, NVD, and GitHub and
+triages each with a cheap model (DeepSeek-v4-flash, measured
+~$0.00008/advisory) into a local store, replacing a costly
+weekly hand-run research pass. (2) *Forge* - a stronger model
+(DeepSeek-v4-pro, ~$0.002/draft) drafts an attack driver from
+the disclosure; the draft is executed against a **live
+vulnerable node**, and a reproduced crash confirms the driver
+is faithful (auto-accepted) while a non-crash routes to human
+review. (3) *Train* - a nightly job retrains each detector's
+full corpus behind a standing quality gate (Cleanlab
+label-issue scan + exact-duplicate count + held-out ROC via
+GroupKFold-by-primitive, D-051). (4) *Package* - the public cut
+is auto-selected (public-cve-replication attacks + all benign),
+trained, clean-gated, and built into an HF bundle with a
+release certificate. (5) *Guard* - a **publish-guard** enforces
+the release rules before anything ships: no author-attribution
+strings, no disclosure-gated identifiers, no secrets or local
+paths, every shipped attack `public-cve-replication` *and*
+registered, the release-cert fully passing, and the card's
+declared counts matching the cut; on any violation the cut is
+built but **not pushed**, and the operator is escalated. (6)
+*Card* - the model card is regenerated from the same cut the
+model trained on, so the published numbers cannot lag the
+shipped model.
+
+The forge is framed honestly, because its limits are the
+reason the node-crash-plus-human gate is load-bearing rather
+than decorative. On a blind benchmark (the model given only the
+CVE text and unrelated style references, its output diffed
+against the hand-written driver) it was **excellent on
+templated single-message CVEs** - "functionally identical to
+the human version" - and **unsafe on hard ones**: on a vague,
+multi-message CVE it was "plausible but WRONG on three counts"
+- wrong root cause, a hallucinated library API, and a dropped
+follow-up message. The honest verdict is "yes for cheap
+templated single-message CVEs (near-identical to hand-written),
+but it confidently hallucinates on hard cases", so the model is
+wired as a first-draft generator behind the existing
+deterministic gate ("does the traffic actually reproduce
+against a node?"), never as hands-off autogen. The methodology
+contribution is not the model but the arrangement: cheap
+generation is admissible *only* because a deterministic
+reproduction check plus a human capture gate catches the
+confident-but-wrong cases it produces.
 
 
 # §6 V7-narrow multi-mechanism finding
@@ -2138,11 +2321,11 @@ cipher-agnostic byte-count manifest layer; §6.4, §7.2) is
 hardened on n=2: SE3 surfaces feature-level anti-transfer
 across one Sui ↔ Solana fold pair, and V8 reframes the
 floor on the same chain pair. The family taxonomy's
-generative-not-bounding claim has three post-cycle attacks
-on record (IA01/IA02/IA02b per §4.3) - all on Sui, all
-classifying into `response_amp`. The post-cycle generative
-test has not yet exercised a non-Sui post-cycle attack at
-v1 submission. The per-chain holdout direction methodology
+generative-not-bounding claim has three post-cycle attacks on
+record (IA01/IA02/IA02b per §4.3) - all on Sui, all classifying
+into `response_amp`; the nine-chain public-CVE scale-up since
+(§4.6) supplies dozens more, and the two documented
+family-extension events are recorded in §4.5. The per-chain holdout direction methodology
 contribution (D-018; §5.3) generalises beyond n=2 by
 construction - the regime is "train on one chain entirely,
 evaluate on the other entirely", which composes across any
@@ -2195,6 +2378,26 @@ SOL_H01/SOL_GR01), C.5 (`consensus_abuse`, requires
 multi-validator Solana cluster), and zero-shot Sui→Solana
 multi-class characterisation, remain forward work; §4.4 /
 §7.6 / §8.7 MC-19 carry the honest-scope caveats.
+
+**Post-v1 update - the ceiling moved, the open problem did
+not.** The n=2 Sui ↔ Solana scope above has since been extended
+to nine chains (§4.6): the public-CVE corpus runs the per-chain
+holdout direction over Bitcoin, Ethereum, Solana, Sui, Cosmos,
+Monero, Dogecoin, Litecoin, and libp2p. Scale did not resolve
+cross-chain transfer - it quantified its absence in the harder
+zero-shot regime. Where the n=2 result above was joint-trained
+(both chains in training) and recovered V11/V14 to 100%,
+zero-shot leave-one-chain-out family recovery at n=9 sits near
+the random-label floor (held-out-chain seven-class macro-F1
+0.17 Sui / 0.35 Solana vs ~0.14) - the two-chain V7-narrow
+non-transfer finding reproduced at n=9. What the scale-up does
+establish is that the *within-chain* binary attack-vs-benign
+signal is real (~0.90 held-out ROC, GroupKFold by primitive;
+§4.6) and that the per-chain holdout regime (D-018) composes to
+n=9 exactly as its n=2 form predicted. The honest status is
+therefore not "ceiling lifted" but "open problem now measured
+across nine chains": whole-taxonomy zero-shot cross-chain
+transfer is unresolved, and we report it as unresolved.
 
 **Cipher-suite sensitivity not measured in v1.** Step-11
 Component 1 (closed 2026-05-04; §7.2) measured cipher-agnostic
@@ -2318,10 +2521,15 @@ Full reproducibility is committed at three levels:
   HuggingFace as of 2026-05-13.
 
 [nrbundle]: https://github.com/NullRabbitLabs/nr-bundle-spec
-- **Sample bundles at HuggingFace `nr-bundles-public`**
-  (forthcoming, gated on Step 12 publication-pipeline work
-  per D-012). 20-50 carefully chosen bundles spanning
-  multiple primitives + at least Sui + Solana.
+- **Published detector + dataset on HuggingFace.** The
+  nine-chain public-CVE network detector is published as
+  `nr-network-known-class-detector` (Apache-2.0, made public
+  2026-07-01); the `nr-bundles-public` sample dataset is live
+  (CC-BY-4.0); the economic-attack detector is staged behind
+  the publish-guard, private pending an operator flip. Each
+  model card is auto-generated from the exact cut its model
+  trained on, so a reader always sees numbers that match the
+  shipped weights.
 - **Full audit trail at `nr-substrate`** (private working
   repo, commit-pinned). Section-by-section commit-pin
   discipline: paper text cites specific `nr-substrate`
@@ -2381,6 +2589,20 @@ feature dicts within `PHASE_1_TOLERANCE` (cardinality + max-
 byte exact, amp-ratio ±1e-4 absolute) - the same
 reproducibility discipline applied to the training-side
 run-tags above.
+
+**Operational maturity + disaster recovery.** Reproducibility
+is now backed operationally, not only documented. The
+end-to-end pipeline of §5.6 (research → forge → nightly train →
+package → publish-guard → self-updating card) *is* the
+reproduction mechanism: the published cut is rebuilt and
+re-gated on every training run rather than hand-assembled, and
+nothing ships that the guard has not cleared. The irreplaceable
+state behind it - the gitignored persistent training store
+(~15 GB) and the working repository - is backed off-box to
+S3-compatible object storage automatically after each nightly
+run, and the repository is pushed to its origin on the same
+cadence, so a single-host loss no longer costs the corpus or
+its audit history.
 
 ## §8.5 Prior-cycle leak-surface closures
 
@@ -3563,7 +3785,6 @@ not load-bearing for any current substrate-paper claim;
 unlike MC-1 through MC-9 and MC-11 through MC-24, it does
 not generate a pre-registration discipline of its own.
 
-
 # §9 Conclusion
 
 This paper presents **iterative leak-surface peeling**: a
@@ -3581,8 +3802,8 @@ vocabulary manifest, three landed schema-additive extensions
 (D-007 → D-009 → D-020), and one adjacent decision under
 deliberation (D-015); and the **chain-agnostic family
 taxonomy** (§4) whose generative-not-bounding behaviour the
-post-cycle IA01/IA02/IA02b classification substantiates
-empirically.
+post-cycle IA01/IA02/IA02b classification (§4.3) and nine-chain
+public-CVE scale-up (§4.6) substantiate empirically.
 
 The technical centerpiece is the V7-narrow multi-mechanism
 finding (§6): cross-chain mechanism non-transfer in this
@@ -3633,10 +3854,17 @@ public before the numbers exist.
 
 The paper's three contributions each carry concrete
 falsification clauses, stated at §1 ¶5 and substantiated in
-§3.5 (format), §4.5 (taxonomy), and §5.5 (methodology). To
-date none of those falsification conditions has been
-triggered; we document the methodology against the
-conditions, not against asserted properties.
+§3.5 (format), §4.5 (taxonomy), and §5.5 (methodology). At v1
+none had triggered; two of the three still have not, but the
+**taxonomy clause has since fired and is recorded honestly**
+(§4.5): the nine-chain scale-up classified dozens of
+cross-chain primitives without extension while also adding one
+new network family and a six-family economic layer - documented
+family-extension events, forward-tracked under the clause
+rather than elided. This is the falsifiability framing working
+as designed: we document the methodology against its
+conditions, and report a triggered condition as triggered, not
+against asserted properties.
 
 Open call: adopt `nr-bundle-spec` v0.1.0
 ([github.com/NullRabbitLabs/nr-bundle-spec][nrbundle],
@@ -3648,6 +3876,19 @@ surfacing its own failure modes, producing methodology
 contributions independent of headline retention - is itself
 substrate-paper-grade material. The closed-leak set grows
 monotonically; the methodology's evidence is the closures.
+
+Since v1, the field-tested instance that open call above
+anticipated has begun to land: the methodology has run on a
+nine-chain public-CVE corpus (§4.6), surfacing its own failure
+modes - a triggered taxonomy clause - and producing methodology
+contributions independent of any headline number: a
+provenance-class publishability discipline and the automated
+guarded pipeline (§5.6), now shipped as published models behind
+a publish-guard rather than promised artefacts. The cross-chain
+family-transfer question those cycles were meant to settle is,
+honestly, still open (§8.2) - but it is now an open problem
+stated precisely across nine chains rather than a two-chain
+caveat.
 
 [nrbundle]: https://github.com/NullRabbitLabs/nr-bundle-spec
 
