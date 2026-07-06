@@ -4132,14 +4132,19 @@ bug); report at the canonical issue tracker per
 `AUDITOR-PROTOCOL` cycle-close discipline.
 
 
-# Appendix B - Decisions log summary (D-001 → D-025)
+# Appendix B - Decisions log summary (load-bearing decisions, D-001 → D-051)
 
 This appendix summarises this paper's load-bearing
 decisions in table form. Full content for each decision is
 canonical at `nr-substrate/docs/DECISIONS.md` (commit-pinned
 per §8.4 reproducibility); this appendix is a navigation aid
 for readers tracing specific paper claims to canonical
-provenance.
+provenance. The table is selective and non-contiguous: it lists
+the decisions this paper's claims rest on (through D-051), with
+the post-v1 additions D-035 (taxonomy extension) and
+D-049/D-050/D-051 (held-out ladder, network-detector manifest,
+guarded pipeline) folded in; intervening IDs live only in the
+canonical log.
 
 | ID | Title | Date | Status | Section |
 |---|---|---|---|---|
@@ -4168,6 +4173,10 @@ provenance.
 | D-023 | Step-11 V8 close + cipher-agnostic Joint A (V7-narrow §SE3 reframe scoped; cipher-agnostic-manifest single-feature-dominance brittleness as substrate-paper material per principle 4; Layer-2 §C.3-bis pre-registration miscalibration contribution) | 2026-05-04 | Closed (Step-11 V8 closes; substrate-paper drafting unblocked) | §6.4, §7.2, §8.7 |
 | D-024 | Production-architecture vantage rescope: post-TLS-termination loopback (principle-1 misspecification correction; pre-engineering-posture criterion reformulation distinguished from D-021 post-engineering threshold-relaxation prohibition) | 2026-05-05 | Active (auditor verdict 2026-05-05 APPROVED WITH REFINEMENTS) | §8.3 (production deployment) |
 | D-025 | Close-gate semantic-coverage rule: production-extractor close-gates verifying a low-level property (extractor numerical equivalence) must pre-register the deployment-claim-load-bearing higher-level property (model prediction-class equivalence) when the two diverge; three regime-scope conditions become mandatory pre-registration items (cardinality envelope + saturation envelope + training-distribution-coverage) | 2026-05-07 | Adopted (Phase-1 close-gate augmented; MC-8 + MC-9 + MC-10 banked) | §8.3, §8.7 (MC-8, MC-9, MC-10) |
+| D-035 | Taxonomy extended with a protocol/economic (DeFi) layer: six additional families (schema-additive, `BUNDLE_VERSION` 2→3), firing the pre-registered taxonomy-generativity clause | 2026-06-18 | Active (economic families populated; the network-DoS spine is unchanged) | §1, §4.5 |
+| D-049 | Held-out evaluation harness: pre-register the L0→L1→L2 real-data ladder before building it | 2026-06-26 | Active (economic-detector promotion regime, distinct from the network detector's held-out signal) | §4.6 |
+| D-050 | Network detector trains on the full `network-v1` feature set (not the 7-feature amplification ablation); adds a per-fit robust-column guard to the production trainer | 2026-06-29 | Active | §4.6 |
+| D-051 | Config-driven training pipeline with a standing quality + held-out-ROC gate | 2026-06-29 | Active | §5.6 |
 
 **Decision IDs never re-number.** Superseded decisions stay
 in the log with a `Status: Superseded by D-NNN` line; the
