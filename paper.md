@@ -67,7 +67,7 @@ The methodology contributions persist independently of any
 single evaluation-gate outcome. Since v1 the corpus has grown
 along the additional-chains axis v1 pre-registered as a v2
 trigger: from the two-chain Sui+Solana base to a **nine-chain,
-~40-primitive public-CVE known-class corpus** (Bitcoin,
+47-primitive public-CVE known-class corpus** (Bitcoin,
 Ethereum, Solana, Sui, Cosmos, Monero, Dogecoin, Litecoin,
 libp2p) in which every attack faithfully reproduces a specific
 public disclosure - a CVE, a GHSA, or a named third-party
@@ -81,11 +81,14 @@ publish-guard → self-updating model card) reproduces the
 corpus end-to-end. The scale-up sharpens the cross-chain
 result rather than softening it: a binary attack-vs-benign
 detector separates attack-*use* from benign-*use* of the same
-wire messages at ~0.90 within-chain held-out ROC (GroupKFold
+wire messages at ~0.96 within-chain held-out ROC (GroupKFold
 by primitive; diagnostic, not a deployment claim), while
-**cross-chain family recovery stays near the floor** -
-held-out-chain seven-class macro-F1 of 0.17 (Sui) / 0.35
-(Solana) against a ~0.14 random-label floor. The two-chain
+**cross-chain family recovery stays near the floor on
+protocol-distinct chains** - leave-one-chain-out macro-F1 of
+0.16-0.46 when a protocol-distinct chain (Monero, Bitcoin,
+Ethereum, Cosmos, libp2p) is held out, and high only where the
+held-out chain is a wire-identical fork inheriting another
+chain's exact primitives (Dogecoin, Litecoin). The two-chain
 V7-narrow non-transfer finding thus generalises to nine
 chains: the mechanism-class signal is real and within-chain;
 whole-taxonomy cross-chain transfer remains an open problem we
@@ -148,7 +151,7 @@ on a 2,103-bundle Sui + Solana corpus (decomposition in
 Appendix A.0), surfacing and closing eight distinct leak
 surfaces in sequence; full inventory in §5.4 + §8.5. The two
 months since v1 extended the same discipline to a nine-chain,
-~40-primitive **public-CVE known-class corpus** and an
+47-primitive **public-CVE known-class corpus** and an
 automated, guarded training pipeline; §4.6 and §5.6 integrate
 those results, including where they update v1's claims.
 
@@ -1038,16 +1041,24 @@ v2 trigger (§8.2). That axis has since been exercised directly.
 The **public-CVE known-class corpus** spans nine chains -
 Bitcoin, Ethereum, Solana, Sui, Cosmos, Monero, Dogecoin,
 Litecoin, and libp2p (the shared gossipsub infrastructure
-layer, where one model reaches many host chains) - with 40
-attack primitives over 46 chain×primitive instances, 1,262
-bundles (850 attack / 412 benign). The organising discipline is
+layer, where one model reaches many host chains) - with 47
+attack primitives over 53 chain×primitive instances and 966
+attack bundles across the nine chains. The load-bearing negative
+class brings the trained cut to 1,442 bundles (476 benign); 8 of
+those benign bundles are Zcash P2P captures retained as extra
+negative traffic - Zcash's own attack primitives are
+content-only and excluded from the model cut (§5.6), so Zcash
+contributes benign traffic but is not one of the nine attack
+chains. The organising discipline is
 provenance, not scale: **every attack primitive faithfully
 reproduces a specific external public disclosure** - a CVE, a
 GHSA, or a named third-party audit - and carries that
 disclosure's URL in `provenance.public_source`. Sourcing
 strength is uneven and stated as such: Bitcoin is strongest
-(~18 real Bitcoin Core P2P CVEs, several inherited on the
-shared wire by Dogecoin and Litecoin), then GHSAs (Cosmos SDK,
+(21 Bitcoin Core P2P disclosure reproductions - formal CVEs,
+bitcoincore.org security disclosures, and a public third-party
+DoS disclosure - several inherited on the shared wire by
+Dogecoin and Litecoin), then GHSAs (Cosmos SDK,
 libp2p / gossipsub) and named audits (Neodyme's Firedancer
 reports for the Solana TPU-QUIC primitives, CertiK's Skyfall
 write-ups for the Sui Move-VM primitives). The weakest-sourced
@@ -1072,32 +1083,53 @@ Three evaluation results, named separately so the binary signal
 is not read as more than it is:
 
 - **Within-chain binary attack-vs-benign** (GroupKFold held out
-  by primitive): ROC **0.8985**. This is the detector's usable
-  signal - and it is diagnostic, on synthetic lab traffic, not
-  a deployment number.
+  by primitive): ROC **0.9641** (82 primitive groups). This is
+  the detector's usable signal - and it is diagnostic, on
+  synthetic lab traffic, not a deployment number.
 - **Zero-shot leave-one-chain-out binary** (train the other
-  eight chains, test the held-out one): **0.63-1.00** - Cosmos
-  and Litecoin 1.00, Ethereum 0.97, Bitcoin 0.91, down to
-  Solana 0.64 and Monero 0.63. A HARD transfer probe, not a
-  deployment metric; chains with few public-CVE primitives
-  (Monero's unique Levin/epee protocol, Solana's QUIC) have the
-  fewest cross-chain near-neighbours, and the number reflects
-  that honestly.
-- **Cross-chain family recovery** (held-out-chain, seven-class
-  macro-F1): **0.17 (Sui) / 0.35 (Solana), against a ~0.14
-  random-label floor**. Recovering *which* family a held-out
-  chain's attack belongs to, zero-shot, is near chance.
+  eight chains, test the held-out one): **0.67-1.00** - Dogecoin,
+  Litecoin, and Sui 1.00, Ethereum 0.99, Cosmos 0.90, Bitcoin
+  0.90, libp2p 0.87, down to Monero 0.78 and Solana 0.67. A HARD
+  transfer probe, not a deployment metric. What sets the tail is
+  protocol-distinctness, not primitive count: Monero (its unique
+  Levin/epee wire) and Solana (QUIC) share the fewest wire-level
+  near-neighbours with the rest of the corpus and sit lowest,
+  whereas chains with equally few primitives still separate
+  cleanly when their wire is well-represented elsewhere - the
+  Bitcoin-forks Dogecoin and Litecoin trivially, and Sui because
+  its amplification attacks are starkly separable from benign.
+- **Cross-chain family recovery** (leave-one-chain-out, macro-F1
+  over the families the held-out chain shares with the rest):
+  **uneven, and near the floor exactly where transfer would be
+  non-trivial**. Holding out a protocol-distinct chain collapses
+  it - 0.16 (Monero, 3 shared families), 0.18 (Bitcoin, 6), 0.36
+  (Ethereum, 3), 0.42 (Cosmos, 3), 0.46 (libp2p, 2); it is high
+  (1.00 Dogecoin, 0.70 Litecoin; 3 shared families each) only
+  where the held-out chain is a wire-identical
+  fork running Bitcoin Core's exact primitives on a renamed wire,
+  so "transfer" there is trivial rather than evidence of
+  generalisation. Sui and Solana each share too few families
+  with the rest of the corpus (one apiece) for the question to be
+  posed at n=9 at all; the n=2 joint-trained Sui ↔ Solana
+  characterisation (§8.2) is where those two are quantified.
+  Recovering *which* family a held-out, protocol-distinct chain's
+  attack belongs to, zero-shot, is near chance.
 
-The three answer different questions. The within-chain binary
-signal is real; the cross-chain family-recovery collapse is the
-two-chain V7-narrow non-transfer finding (§6) reproduced at
-nine-chain scale, and is the harder zero-shot regime beyond the
-joint-trained n=2 Sui ↔ Solana multi-class results of §8.2.
-Conflating them - letting the ~0.90 binary ROC stand in for
-cross-chain generalisation - is exactly the overclaim the
-methodology exists to prevent. Mechanism-class detection is a
-within-chain result; whole-taxonomy cross-chain transfer
-remains an open problem.
+The three answer different questions. Binary transfer asks only
+whether held-out traffic *looks like an attack at all* - a gross
+traffic-shape question that survives moderate wire-distinctness
+(Sui tops it at 1.00) - whereas family recovery asks *which
+mechanism*, which does not; that gap is why a chain can lead the
+binary axis yet be unposable on the family axis. The within-chain
+binary signal is real; the cross-chain family-recovery collapse
+on the protocol-distinct held-out chains is the two-chain V7-narrow
+non-transfer finding (§6) reproduced at nine-chain scale, and is
+the harder zero-shot regime beyond the joint-trained n=2
+Sui ↔ Solana multi-class results of §8.2. Conflating them -
+letting the ~0.96 binary ROC stand in for cross-chain
+generalisation - is exactly the overclaim the methodology exists
+to prevent. Mechanism-class detection is a within-chain result;
+whole-taxonomy cross-chain transfer remains an open problem.
 
 Two ceilings bound the corpus, stated per principle 2. It is
 **diagnostic, not a deployment claim**: bundles are synthetic
@@ -2388,11 +2420,17 @@ cross-chain transfer - it quantified its absence in the harder
 zero-shot regime. Where the n=2 result above was joint-trained
 (both chains in training) and recovered V11/V14 to 100%,
 zero-shot leave-one-chain-out family recovery at n=9 sits near
-the random-label floor (held-out-chain seven-class macro-F1
-0.17 Sui / 0.35 Solana vs ~0.14) - the two-chain V7-narrow
-non-transfer finding reproduced at n=9. What the scale-up does
-establish is that the *within-chain* binary attack-vs-benign
-signal is real (~0.90 held-out ROC, GroupKFold by primitive;
+the random-label floor on the protocol-distinct held-out chains
+(macro-F1 0.16 Monero, 0.18 Bitcoin, 0.36 Ethereum, 0.42 Cosmos,
+0.46 libp2p), rising to a trivial ~1.0 only for wire-identical
+forks that inherit another chain's exact primitives (1.00
+Dogecoin, 0.70 Litecoin) - the two-chain V7-narrow non-transfer
+finding reproduced at n=9. (Sui and Solana share one family
+apiece with the rest of the corpus at n=9, too few for the LOCO
+question to be posed; they are the joint-trained n=2
+characterisation above, not the LOCO sweep.) What the scale-up
+does establish is that the *within-chain* binary attack-vs-benign
+signal is real (~0.96 held-out ROC, GroupKFold by primitive;
 §4.6) and that the per-chain holdout regime (D-018) composes to
 n=9 exactly as its n=2 form predicted. The honest status is
 therefore not "ceiling lifted" but "open problem now measured
