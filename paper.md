@@ -152,8 +152,8 @@ Appendix A.0), surfacing and closing eight distinct leak
 surfaces in sequence; full inventory in §5.4 + §8.5. The two
 months since v1 extended the same discipline to a nine-chain,
 47-primitive **public-CVE known-class corpus** and an
-automated, guarded training pipeline; §4.6 and §5.6 integrate
-those results, including where they update v1's claims.
+automated, guarded training pipeline; §4.6, §5.6, and §8.8
+integrate those results, including where they update v1's claims.
 
 We make three contributions:
 
@@ -3823,6 +3823,83 @@ not load-bearing for any current substrate-paper claim;
 unlike MC-1 through MC-9 and MC-11 through MC-24, it does
 not generate a pre-registration discipline of its own.
 
+## §8.8 Methodology contributions from the cross-chain (Cosmos-family) workstream
+
+Extending the methodology to a Cosmos-family chain family
+(three pre-registered cycles, 2026-05) surfaced a further group
+of contributions. Consistent with the provenance-class
+discipline (§5.6), the workstream's specific candidate findings
+are `original` and coordinated-disclosed separately - **they are
+not reported here**; only the methodology is. We anchor these
+contributions on their governing decisions (D-026 → D-029) to
+keep them distinct from the Step-11 / Phase-1 / V9-V14 series
+(MC-1 … MC-24) above.
+
+**Non-substitution and the NOT-EVALUABLE exit (D-026).** When a
+pre-registered bundle-count floor binds, the correct cycle
+outcome is to surface "NOT-EVALUABLE" rather than relax the
+floor or let bundle-count proxies (totals, fractions) stand in
+for the composition-rule grade. The workstream's first cycle
+formally reached NOT-EVALUABLE - a pre-registered exit, not a
+failure mode - enforcing the composition arithmetic of §5.2
+against the temptation to grade a partial cycle.
+
+**Honest retraction at three cadences (D-027, D-028).** The
+layer-2 falsification paths ran across three time-scales and
+are the paper's honest-retraction thesis in miniature. A
+cycle-1 methodology call was *partially* retracted in cycle 2
+(a compute-asymmetric class fold collapsed once the response
+modality was actually populated) and a second was *fully*
+retracted (a pattern the cycle-1 analysis had ruled out proved
+reachable). Then a cycle-2 *decision-grade* finding was
+retracted the **same day** in cycle 3, when a closure
+measurement showed it had been a measurement-tooling artefact
+rather than a real mechanism failure. Each retraction preserved
+the original record - banner plus inline markers - alongside
+the correction, so the audit trail shows both what was claimed
+and why it was withdrawn.
+
+**Broken-attack-craft-discard, active-recv, single-reader
+(D-028).** That same-day retraction had a concrete cause and
+produced a reusable rule. An audit of the attack-craft entry
+points found a fire-and-forget path that sent a request and
+never read the server's response, so an error the mechanism
+*did* raise was invisible to the feature extractor. Two
+disciplines follow: attack-craft holding a long-lived socket
+across request/response cycles must *actively read* each
+response (else the mechanism's own error signal never reaches
+the corpus), and must keep *exactly one reader* on the socket
+at a time (a keepalive receive-loop racing the request path
+silently corrupts response matching - the second rule refined
+the first once it proved under-specified). And a rule distinct
+from mechanism-retract: when bundle traffic fails to reflect
+the attack manifold because of an attack-craft *tooling* defect
+rather than a mechanism falsification, the bundles are
+**discarded**, whereas mechanism-retract *preserves* bundles as
+evidence. The canonical application removed a 165-line
+hand-rolled client cleanly rather than carrying dead fallback
+forward.
+
+**Cost-curve extrapolation for state-dependent-cost primitives
+(D-029).** For a primitive whose per-request cost scales with
+node state (established by source-trace), measuring across
+~five state tiers spanning roughly a 10× range and fitting a
+linear model (observed R² ≈ 0.999) lets one extrapolate a
+production-scale cost the lab cannot directly exhibit - turning
+"a small cost measured in the lab, unclear at scale" into a
+quantified production estimate orders of magnitude larger. This
+is a production-scale severity-estimation discipline; the
+finding it was applied to is coordinated-disclosed separately
+and, again, not reported here. The workstream also tested the §4
+taxonomy on a new chain family: across the three cycles the
+outcome grade progressed NOT-EVALUABLE → B → A as the
+attack-craft matured to emit correctly-shaped bundles, with the
+Cosmos-family primitives folding into existing families -
+cross-chain generativity evidence complementary to §4.6, and a
+reminder that per-chain deployment caveats (the same mechanism
+surviving differently across chains' design choices) are
+themselves first-class methodology output.
+
 # §9 Conclusion
 
 This paper presents **iterative leak-surface peeling**: a
@@ -3917,12 +3994,15 @@ monotonically; the methodology's evidence is the closures.
 
 Since v1, the field-tested instance that open call above
 anticipated has begun to land: the methodology has run on a
-nine-chain public-CVE corpus (§4.6), surfacing its own failure
-modes - a triggered taxonomy clause - and producing methodology
-contributions independent of any headline number: a
-provenance-class publishability discipline and the automated
-guarded pipeline (§5.6), now shipped as published models behind
-a publish-guard rather than promised artefacts. The cross-chain
+nine-chain public-CVE corpus (§4.6) and a cross-chain
+(Cosmos-family) workstream (§8.8), surfacing its own failure
+modes - a triggered taxonomy clause, a same-day decision-grade
+retraction - and producing methodology contributions independent
+of any headline number: a provenance-class publishability
+discipline, an attack-craft-correctness discipline, a
+production-scale severity-estimation discipline, and the
+automated guarded pipeline (§5.6, §8.8), now shipped as published
+models behind a publish-guard rather than promised artefacts. The cross-chain
 family-transfer question those cycles were meant to settle is,
 honestly, still open (§8.2) - but it is now an open problem
 stated precisely across nine chains rather than a two-chain
@@ -4141,7 +4221,8 @@ per §8.4 reproducibility); this appendix is a navigation aid
 for readers tracing specific paper claims to canonical
 provenance. The table is selective and non-contiguous: it lists
 the decisions this paper's claims rest on (through D-051), with
-the post-v1 additions D-035 (taxonomy extension) and
+the cross-chain (Cosmos-family) workstream decisions D-026 → D-029
+(§8.8) and the post-v1 additions D-035 (taxonomy extension) and
 D-049/D-050/D-051 (held-out ladder, network-detector manifest,
 guarded pipeline) folded in; intervening IDs live only in the
 canonical log.
@@ -4173,6 +4254,10 @@ canonical log.
 | D-023 | Step-11 V8 close + cipher-agnostic Joint A (V7-narrow §SE3 reframe scoped; cipher-agnostic-manifest single-feature-dominance brittleness as substrate-paper material per principle 4; Layer-2 §C.3-bis pre-registration miscalibration contribution) | 2026-05-04 | Closed (Step-11 V8 closes; substrate-paper drafting unblocked) | §6.4, §7.2, §8.7 |
 | D-024 | Production-architecture vantage rescope: post-TLS-termination loopback (principle-1 misspecification correction; pre-engineering-posture criterion reformulation distinguished from D-021 post-engineering threshold-relaxation prohibition) | 2026-05-05 | Active (auditor verdict 2026-05-05 APPROVED WITH REFINEMENTS) | §8.3 (production deployment) |
 | D-025 | Close-gate semantic-coverage rule: production-extractor close-gates verifying a low-level property (extractor numerical equivalence) must pre-register the deployment-claim-load-bearing higher-level property (model prediction-class equivalence) when the two diverge; three regime-scope conditions become mandatory pre-registration items (cardinality envelope + saturation envelope + training-distribution-coverage) | 2026-05-07 | Adopted (Phase-1 close-gate augmented; MC-8 + MC-9 + MC-10 banked) | §8.3, §8.7 (MC-8, MC-9, MC-10) |
+| D-026 | Cross-chain (Cosmos-family) cycle 1: NOT-EVALUABLE exit when a pre-registered bundle-count floor binds (non-substitution rule; no bundle-count proxy for the composition grade) | 2026-05-14 | Recorded | §8.8 |
+| D-027 | Cross-chain (Cosmos-family) cycle 2: partial + full mechanism retractions across cadences; new methodology-contribution-grade decision | 2026-05-14 | Recorded | §8.8 |
+| D-028 | Cross-chain (Cosmos-family) cycle-2 same-day retraction: broken-attack-craft-discard + active-recv / single-reader socket disciplines | 2026-05-14 | Recorded | §8.8 |
+| D-029 | Cross-chain (Cosmos-family) cycle 3: cost-curve extrapolation for state-dependent-cost primitives; NOT-EVALUABLE → B → A grade progression + per-chain deployment caveat | 2026-05-18 | Recorded | §8.8 |
 | D-035 | Taxonomy extended with a protocol/economic (DeFi) layer: six additional families (schema-additive, `BUNDLE_VERSION` 2→3), firing the pre-registered taxonomy-generativity clause | 2026-06-18 | Active (economic families populated; the network-DoS spine is unchanged) | §1, §4.5 |
 | D-049 | Held-out evaluation harness: pre-register the L0→L1→L2 real-data ladder before building it | 2026-06-26 | Active (economic-detector promotion regime, distinct from the network detector's held-out signal) | §4.6 |
 | D-050 | Network detector trains on the full `network-v1` feature set (not the 7-feature amplification ablation); adds a per-fit robust-column guard to the production trainer | 2026-06-29 | Active | §4.6 |
